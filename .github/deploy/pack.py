@@ -18,7 +18,7 @@ with tarfile.open(output / 'stormarium.tar.gz', 'w:gz', compresslevel=6) as bund
         if not p.is_file():
             continue
         name = p.relative_to(site).as_posix()
-        if p.stat().st_size < 128 * 1024:
+        if p.suffix.lower() in {'.html', '.js', '.css', '.xml', '.json', '.txt', '.md', '.tex', '.svg'} or p.stat().st_size < 128 * 1024:
             bundle.add(p, arcname='site/' + name)
             continue
         sha = hashlib.sha256(p.read_bytes()).hexdigest()
