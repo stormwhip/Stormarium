@@ -57,7 +57,7 @@ def main():
             raise RuntimeError('资源清单无效')
         get(assets['stormarium.tar.gz'], tmp / 'core.tar.gz')
         with tarfile.open(str(tmp / 'core.tar.gz'), 'r:gz') as core, \
-                tarfile.open(str(tmp / 'release.tar.gz'), 'w:gz', compresslevel=1) as payload:
+                tarfile.open(str(tmp / 'release.tar.gz'), 'w:gz', compresslevel=1, dereference=True) as payload:
             for member in core:
                 payload.addfile(member, core.extractfile(member) if member.isreg() else None)
             for name, digest in large.items():
