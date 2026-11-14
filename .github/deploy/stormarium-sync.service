@@ -1,0 +1,11 @@
+[Unit]
+Description=Publish the latest Stormarium website release from GitHub
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/libexec/stormarium-sync
+TimeoutStartSec=6min
+UMask=0077
+PrivateTmp=yes

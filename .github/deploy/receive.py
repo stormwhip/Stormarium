@@ -1,5 +1,5 @@
 #!/usr/bin/python3 -I
-"""Receive a website release over SSH. Installed separately as a root-owned file."""
+"""Receive a website release from GitHub. Installed separately as a root-owned file."""
 import fcntl
 import filecmp
 import grp
@@ -50,7 +50,7 @@ def allowed(parts):
     return False
 
 
-def receive(stage):
+def receive(stage, expected):
     archive = stage / 'upload.tar.gz'
     remaining = MAX_COMPRESSED
     with archive.open('wb') as output:
@@ -82,7 +82,7 @@ def receive(stage):
     for name in ('index.html', 'search.html', 'sitemap.xml', 'tools/english.html',
                  'stormarium-version.txt'):
         require((stage / 'site' / name).stat().st_size > 0, '缺少必要的网站文件')
-    require(re.fullmatch(rb'[a-f0-9]{40}\n', (stage / 'site/stormarium-version.txt').read_bytes()),
+    require((stage / 'site/stormarium-version.txt').read_bytes() == (expected + '\n').encode('ascii'),
             '提交编号无效')
     require(filecmp.cmp(str(stage / 'service/requirements.txt'),
                         str(APP / 'requirements.txt'), shallow=False),
@@ -233,7 +233,8 @@ def install(stage, staging_site):
 
 
 def main():
-    require(len(sys.argv) == 1, '发布入口不接收参数')
+    require(len(sys.argv) == 2 and re.fullmatch(r'[0-9a-f]{40}', sys.argv[1]),
+            '发布入口需要有效的提交编号')
     os.umask(0o077)
     STATE.mkdir(mode=0o700, exist_ok=True)
     with (STATE / 'release.lock').open('a') as lock:
@@ -241,7 +242,7 @@ def main():
         with tempfile.TemporaryDirectory(prefix='payload-', dir=str(STATE)) as data, \
                 tempfile.TemporaryDirectory(prefix='.stormarium-', dir=str(SITE.parent)) as web:
             stage = Path(data)
-            receive(stage)
+            receive(stage, sys.argv[1])
             install(stage, Path(web) / 'site')
 
 

@@ -1,0 +1,11 @@
+[Unit]
+Description=Check GitHub for new Stormarium website releases
+
+[Timer]
+OnBootSec=45s
+OnUnitInactiveSec=120s
+AccuracySec=5s
+Unit=stormarium-sync.service
+
+[Install]
+WantedBy=timers.target
