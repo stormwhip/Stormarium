@@ -21,7 +21,7 @@ def get(asset, path):
     if not isinstance(identity, int) or not 0 < size <= 130 * 1024 * 1024:
         raise RuntimeError('GitHub 发布包信息无效')
     url = API + '/releases/assets/' + str(identity)
-    subprocess.run([*CURL, '--max-time', '240', '--max-filesize', str(size),
+    subprocess.run([*CURL, '--max-time', '1200', '--max-filesize', str(size),
                     '-H', 'Accept: application/octet-stream', '-o', str(path), url], check=True)
     digest = asset.get('digest', '')
     if path.stat().st_size != size or (digest and digest != 'sha256:' + sha(path)):

@@ -6,6 +6,6 @@ After=network-online.target
 [Service]
 Type=oneshot
 ExecStart=/usr/local/libexec/stormarium-sync
-TimeoutStartSec=25min
+TimeoutStartSec=45min
 UMask=0077
 PrivateTmp=yes
