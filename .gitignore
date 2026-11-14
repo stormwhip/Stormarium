@@ -1,0 +1,11 @@
+/网站/
+/网站目录说明.txt
+/服务/config.json
+/服务/data/
+.env
+.env.*
+*.pem
+*.key
+*.pyc
+__pycache__/
+.DS_Store

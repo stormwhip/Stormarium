@@ -1,0 +1,53 @@
+<nav class="breadcrumb" aria-label="面包屑">
+  <a href="{{ROOT}}index.html">首页</a>
+  <span class="crumb-sep" aria-hidden="true">/</span>
+  <a href="{{ROOT}}index.html#tools">{{工具箱标题}}</a>
+  <span class="crumb-sep" aria-hidden="true">/</span>
+  <span class="crumb-current" aria-current="page">{{工具名}}</span>
+</nav>
+
+<section class="tool-page" id="tool-app" data-tool="summary" data-root="{{ROOT}}">
+  <header class="tool-head">
+    <h1 class="page-title">{{工具名}}</h1>
+    <p class="page-lead">{{工具简介}}</p>
+  </header>
+
+  <div class="tool-panel">
+    <div id="drop-zone" class="drop-zone" role="button" tabindex="0" aria-label="点击选择文件，或把文件拖到这里">
+      <span class="drop-ico" aria-hidden="true">⇧</span>
+      <p class="drop-title">点击选择文件，或拖拽到这里</p>
+      <p class="drop-hint">支持 PDF / PPTX / DOCX / TXT / PNG / JPG / JPEG / WEBP，单个文件不超过 20 MB</p>
+      <input id="file-input" class="visually-hidden" type="file" accept=".pdf,.pptx,.docx,.txt,.png,.jpg,.jpeg,.webp">
+    </div>
+
+    <div id="file-chosen" class="file-chosen" hidden>
+      <span class="file-chosen-ico" aria-hidden="true">📄</span>
+      <span class="file-chosen-main">
+        <span id="file-name" class="file-chosen-name"></span>
+        <span id="file-size" class="file-chosen-size"></span>
+      </span>
+      <button id="file-clear" class="btn-ghost" type="button">重新选择</button>
+    </div>
+
+    <div class="tool-actions">
+      <button id="start-btn" class="btn tool-start" type="button" disabled>开始生成</button>
+    </div>
+
+    <div id="status" class="tool-status" hidden>
+      <div class="progress" id="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+        <div class="progress-bar" id="progress-bar"></div>
+      </div>
+      <p class="status-text" id="status-text" aria-live="polite">准备中…</p>
+    </div>
+
+    <div id="result" class="tool-result" hidden>
+      <p class="result-title">生成完成</p>
+      <a id="download-btn" class="btn download-btn" href="#" download>下载 PDF</a>
+      <p class="result-hint">下载链接 2 小时内有效，请及时保存。</p>
+    </div>
+
+    <p id="error-box" class="tool-error" role="alert" hidden></p>
+
+    <p class="tool-disclaimer">本工具仅供学习交流，内容由 AI 生成，不代表本站观点。请勿上传包含个人隐私或涉密信息的文件。</p>
+  </div>
+</section>

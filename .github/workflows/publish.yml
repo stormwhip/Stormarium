@@ -1,0 +1,77 @@
+name: 发布网站
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '内容/**'
+      - '站点素材/**'
+      - '站点配置.json'
+      - '工具/**'
+      - '服务/**'
+      - '.github/workflows/publish.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: stormarium-production
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: 构建并发布
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+      - name: 生成网站
+        env:
+          TZ: Asia/Shanghai
+        run: |
+          set -euo pipefail
+          # 保持各篇笔记的更新时间，避免每次检出都把它们变成当天。
+          while IFS= read -r -d '' file; do
+            date=$(git log -1 --format=%ct -- "$file")
+            if [[ -n "$date" ]]; then touch -d "@$date" -- "$file"; fi
+          done < <(git ls-files -z -- 内容)
+          node 工具/build.js
+          test -s 网站/index.html
+          test -s 网站/sitemap.xml
+          test -s 网站/search.html
+          test -s 网站/tools/english.html
+          test -z "$(find 网站 服务 -type l -print -quit)"
+      - name: 同步到阿里云服务器
+        env:
+          DEPLOY_KEY: ${{ secrets.STORMARIUM_DEPLOY_KEY }}
+          DEPLOY_TARGET: ${{ secrets.STORMARIUM_DEPLOY_TARGET }}
+          DEPLOY_KNOWN_HOST: ${{ secrets.STORMARIUM_DEPLOY_KNOWN_HOST }}
+        run: |
+          set -euo pipefail
+          tmp=$(mktemp -d)
+          trap 'rm -rf -- "$tmp"' EXIT
+          umask 077
+          printf '%s\n' "$DEPLOY_KEY" > "$tmp/key"
+          printf '%s\n' "$DEPLOY_KNOWN_HOST" > "$tmp/known_hosts"
+          test -s "$tmp/key"
+          test -s "$tmp/known_hosts"
+          mkdir -p "$tmp/payload/service"
+          mv 网站 "$tmp/payload/site"
+          cp -a 服务/*.py 服务/prompts 服务/templates 服务/requirements.txt "$tmp/payload/service/"
+          printf '%s\n' "$GITHUB_SHA" > "$tmp/payload/site/stormarium-version.txt"
+          tar -C "$tmp/payload" -czf "$tmp/site.tar.gz" site service
+          ssh -i "$tmp/key" -o IdentitiesOnly=yes -o BatchMode=yes -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="$tmp/known_hosts" -o HostKeyAlgorithms=ssh-ed25519 \
+            -o ConnectTimeout=20 -o ServerAliveInterval=15 -o ServerAliveCountMax=4 \
+            "$DEPLOY_TARGET" publish < "$tmp/site.tar.gz"
+      - name: 检查公开站点
+        run: |
+          curl --retry 3 --retry-all-errors --max-time 15 -fsS https://stormwhip.com/ -o /dev/null
+          curl --retry 3 --retry-all-errors --max-time 15 -fsS https://stormwhip.com/api/health -o /dev/null

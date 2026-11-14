@@ -1,0 +1,28 @@
+<h1 class="visually-hidden">{{站点标题}}</h1>
+
+<section class="home-search" aria-label="知识点搜索">
+  <form class="search-home-form" action="search.html" method="get" role="search">
+    <label class="visually-hidden" for="home-search-input">搜索知识点、章节或资料</label>
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
+    <input id="home-search-input" name="q" type="search" maxlength="160" placeholder="搜索知识点、章节或资料" autocomplete="off">
+    <button type="submit">搜索 <span aria-hidden="true">→</span></button>
+  </form>
+</section>
+
+<section class="home-section" id="notes" aria-labelledby="home-notes-title">
+  <div class="section-head">
+    <h2 class="section-title" id="home-notes-title">笔记与资料</h2>
+  </div>
+  <div class="subject-grid">
+{{学科卡片}}
+  </div>
+</section>
+
+<section class="home-section" id="tools" aria-labelledby="home-tools-title">
+  <div class="section-head">
+    <h2 class="section-title" id="home-tools-title">{{工具箱标题}}</h2>
+  </div>
+  <div class="tool-grid">
+{{工具卡片}}
+  </div>
+</section>

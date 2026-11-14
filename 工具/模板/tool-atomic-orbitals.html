@@ -1,0 +1,88 @@
+<nav class="breadcrumb" aria-label="面包屑">
+  <a href="{{ROOT}}index.html">首页</a>
+  <span class="crumb-sep" aria-hidden="true">/</span>
+  <a href="{{ROOT}}index.html#tools">{{工具箱标题}}</a>
+  <span class="crumb-sep" aria-hidden="true">/</span>
+  <span class="crumb-current" aria-current="page">{{工具名}}</span>
+</nav>
+
+<section class="orbital-app" aria-labelledby="orbital-title">
+  <header class="orbital-head">
+    <img src="{{ROOT}}assets/custom/工具图标/原子轨道可视化.png" width="54" height="54" alt="">
+    <div>
+      <h1 class="page-title" id="orbital-title">{{工具名}}</h1>
+      <p>氢样原子的实轨道</p>
+    </div>
+  </header>
+  <div class="orbital-workspace">
+    <section class="orbital-view" aria-labelledby="orbital-view-title">
+      <header class="orbital-bar">
+        <h2 id="orbital-view-title">轨道视图</h2>
+        <div class="orbital-switch" role="group" aria-label="视图类型">
+          <button type="button" data-mode="cloud" aria-pressed="true">概率点云</button>
+          <button type="button" data-mode="surface" aria-pressed="false">概率等值面</button>
+        </div>
+      </header>
+      <div class="orbital-stage" id="orbital-stage">
+        <svg id="orbital-axes" aria-hidden="true"></svg>
+        <canvas id="orbital-scene" tabindex="0" aria-label="三维轨道，拖动或使用方向键旋转，滚轮或加减键缩放"></canvas>
+        <div class="orbital-caption">
+          <div class="orbital-current" id="orbital-current"></div>
+          <div class="orbital-quantum" id="orbital-quantum"></div>
+          <div class="orbital-equation" data-math="\psi=R_{n\ell}(r)\,Y^{\mathrm R}_{\ell\mu}(\theta,\varphi)"></div>
+        </div>
+        <div class="orbital-phase" aria-label="波函数符号图例">
+          <span><i class="orbital-positive"></i><span data-math="\psi>0"></span></span>
+          <span><i class="orbital-negative"></i><span data-math="\psi<0"></span></span>
+        </div>
+        <div class="orbital-view-buttons" role="group" aria-label="视角控制">
+          <button type="button" data-camera="reset">复位</button>
+          <button type="button" data-camera="out" aria-label="缩小">−</button>
+          <button type="button" data-camera="in" aria-label="放大">+</button>
+        </div>
+        <div class="orbital-scale" id="orbital-scale"><span id="orbital-scale-label"></span><i></i></div>
+        <div class="orbital-status" id="orbital-status" role="status" hidden></div>
+      </div>
+    </section>
+
+    <section class="orbital-controls" aria-labelledby="orbital-controls-title">
+      <header class="orbital-bar"><h2 id="orbital-controls-title">轨道选择</h2></header>
+      <div class="orbital-control-body">
+        <fieldset><legend>常用轨道</legend><div class="orbital-options" id="orbital-presets"></div></fieldset>
+        <fieldset><legend>主量子数 <span data-math="n"></span></legend><div class="orbital-options orbital-six" id="orbital-n"></div></fieldset>
+        <fieldset><legend>角量子数 <span data-math="\ell"></span></legend><div class="orbital-options orbital-six" id="orbital-l"></div></fieldset>
+        <fieldset><legend>实轨道 <span data-math="Y^{\mathrm R}_{\ell\mu}"></span></legend><div class="orbital-options orbital-basis" id="orbital-basis"></div></fieldset>
+        <fieldset><legend>核电荷数 <span data-math="Z"></span></legend><div class="orbital-options orbital-six" id="orbital-z"></div></fieldset>
+        <fieldset id="orbital-cover-controls" hidden><legend>包围概率</legend><div class="orbital-options" id="orbital-cover"></div></fieldset>
+      </div>
+    </section>
+
+    <div class="orbital-analysis">
+      <section class="orbital-distribution" aria-labelledby="orbital-distribution-title">
+        <header class="orbital-bar">
+          <h2 id="orbital-distribution-title">径向概率分布</h2>
+          <span class="orbital-equation" data-math="P(r)=r^2\lvert R_{n\ell}(r)\rvert^2"></span>
+        </header>
+        <div class="orbital-chart">
+          <span class="orbital-y-label" data-math="P(r)\,/\,a_0^{-1}"></span>
+          <svg id="orbital-plot" role="img" aria-label="径向概率密度随半径变化"></svg>
+          <span class="orbital-x-label" data-math="r\,/\,a_0"></span>
+        </div>
+        <div class="orbital-chart-key">
+          <span><i class="orbital-mode-line"></i>最概然半径</span>
+          <span><i class="orbital-mean-line"></i>平均半径</span>
+        </div>
+      </section>
+      <section class="orbital-statistics" aria-labelledby="orbital-stats-title">
+        <header class="orbital-bar"><h2 id="orbital-stats-title">径向统计</h2></header>
+        <dl>
+          <div><dt>最概然半径</dt><dd id="orbital-stat-mode"></dd></div>
+          <div><dt>平均半径</dt><dd id="orbital-stat-mean"></dd></div>
+          <div><dt>90% 概率半径</dt><dd id="orbital-stat-r90"></dd></div>
+          <div><dt>99% 概率半径</dt><dd id="orbital-stat-r99"></dd></div>
+          <div class="orbital-nodes"><dt>径向 / 角向节点数</dt><dd id="orbital-stat-nodes"></dd></div>
+        </dl>
+      </section>
+    </div>
+  </div>
+</section>

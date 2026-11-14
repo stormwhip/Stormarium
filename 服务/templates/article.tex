@@ -1,0 +1,100 @@
+% =====================================================================
+% 神秘工具箱 · 自动生成文章模板（article + xeCJK + xelatex）
+% 服务器上没有 ctex / texlive-lang-chinese，因此**不使用 ctexart**，
+% 直接用 xeCJK 指定 Noto CJK 字体（契约 §9.3）。
+%
+% 服务端渲染的占位符（模板注释里不要写占位符原文，避免被字符串替换误伤）：
+%   TITLE / SUBTITLE / HEADER / GENERATED_AT / BODY，服务端替换时会补上双 @ 标记。
+%
+% 安全：编译命令固定 -no-shell-escape，模板中不使用任何 shell-escape 类命令。
+% 章节编号使用阿拉伯数字（服务器未安装中文数字宏包，不能用中文数字）。
+% =====================================================================
+\documentclass[12pt,a4paper]{article}
+
+\usepackage{xeCJK}
+\usepackage{fontspec,geometry,hyperref,booktabs,enumitem,xcolor,titlesec,listings,amsmath,graphicx}
+% 服务器上不保证有 amsfonts（amssymb.sty 的来源）；有就加载，没有也不影响模板本身。
+\IfFileExists{amssymb.sty}{\usepackage{amssymb}}{}
+
+% ---- 中文字体：优先 Noto CJK（部署机），其次 Fandol，最后 Windows 字体 ----
+% 说明：字体检测用 fontspec 的 \IfFontExistsTF，缺字体时逐级回退，
+%       保证「服务器装了 Noto」和「本地只有 Windows 字体」两种环境都能编译。
+\IfFontExistsTF{Noto Serif CJK SC}{
+  \setCJKmainfont{Noto Serif CJK SC}
+  \IfFontExistsTF{Noto Sans CJK SC}{\setCJKsansfont{Noto Sans CJK SC}}{\setCJKsansfont{Noto Serif CJK SC}}
+  \IfFontExistsTF{Noto Sans Mono CJK SC}{\setCJKmonofont{Noto Sans Mono CJK SC}}{\setCJKmonofont{Noto Sans CJK SC}}
+}{
+  \IfFontExistsTF{Noto Sans CJK SC}{
+    \setCJKmainfont{Noto Sans CJK SC}
+    \setCJKsansfont{Noto Sans CJK SC}
+    \setCJKmonofont{Noto Sans CJK SC}
+  }{
+    \IfFontExistsTF{FandolSong-Regular}{
+      \setCJKmainfont{FandolSong-Regular}
+      \setCJKsansfont{FandolHei-Regular}
+      \setCJKmonofont{FandolFang-Regular}
+    }{
+      \IfFontExistsTF{SimSun}{
+        \setCJKmainfont{SimSun}
+        \setCJKsansfont{SimHei}
+        \setCJKmonofont{SimSun}
+      }{
+        \setCJKmainfont{Noto Serif CJK SC}
+      }
+    }
+  }
+}
+
+% ---- 版面 ----
+\geometry{margin=2.2cm,top=2.4cm,bottom=2.4cm}
+\linespread{1.3}
+\setlength{\parindent}{2em}
+\setlength{\parskip}{0.35em}
+\setlength{\emergencystretch}{2em}
+
+% ---- 标题样式（阿拉伯数字编号）----
+\titleformat{\section}{\Large\bfseries}{\thesection}{0.6em}{}
+\titleformat{\subsection}{\large\bfseries}{\thesubsection}{0.6em}{}
+\titleformat{\subsubsection}{\normalsize\bfseries}{\thesubsubsection}{0.6em}{}
+\titlespacing*{\section}{0pt}{1.1em}{0.45em}
+\titlespacing*{\subsection}{0pt}{0.9em}{0.35em}
+
+% ---- 代码块 ----
+\lstset{
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  columns=fullflexible,
+  keepspaces=true,
+  frame=single,
+  showstringspaces=false
+}
+\setlist{itemsep=0.15em, topsep=0.25em, parsep=0.2em}
+\hypersetup{colorlinks=true, linkcolor=blue!50!black, urlcolor=blue!50!black}
+
+\begin{document}
+
+% 空模板标题时直接排正文，由各英语任务给出内容标题。
+\if\relax\detokenize{@@TITLE@@}\relax
+\linespread{1.1}\selectfont
+\setlength{\parskip}{0.2em}
+\else
+\begin{center}
+{\LARGE\bfseries @@TITLE@@}\\[0.5em]
+{\small\color{gray} @@HEADER@@}\\[0.25em]
+{\small\color{gray} @@SUBTITLE@@}
+\end{center}
+
+\vspace{0.35em}
+\hrule
+\vspace{0.9em}
+\fi
+
+@@BODY@@
+
+\if\relax\detokenize{@@TITLE@@}\relax\else
+\vfill
+\noindent\rule{\linewidth}{0.3pt}
+{\footnotesize\color{gray} 本工具仅供学习交流，内容由 AI 生成，不代表本站观点；生成时间：@@GENERATED_AT@@。}
+\fi
+
+\end{document}

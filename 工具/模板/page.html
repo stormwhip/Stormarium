@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="{{主题}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<meta name="generator" content="个人笔记网站生成器">
+{{HEAD}}
+<script>
+/*
+  主题切换：默认跟随系统，用户点过按钮之后记在 localStorage 里。
+  这段必须放在 <head> 里，否则深色模式会闪白。
+*/
+(function () {
+  try {
+    var saved = localStorage.getItem('theme');
+    if (saved === 'light' || saved === 'dark') {
+      document.documentElement.setAttribute('data-theme', saved);
+    }
+  } catch (e) { /* 隐私模式下 localStorage 可能不可用，忽略即可 */ }
+})();
+</script>
+</head>
+<body class="page-{{BODYCLASS}}">
+<a class="skip-link" href="#main">跳到正文</a>
+{{HEADER}}
+<main id="main" class="wrap{{MAIN_CLASS}}">
+{{BODY}}
+</main>
+{{FOOTER}}
+<script src="{{ROOT}}assets/theme.js" defer></script>
+{{SCRIPTS}}
+</body>
+</html>

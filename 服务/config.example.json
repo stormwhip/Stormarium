@@ -1,0 +1,49 @@
+{
+  "_说明": "复制本文件为 config.json 后填写。config.json 含真实 key，权限必须 600，禁止提交到仓库。",
+  "_说明_enabled": "紧急开关。false = 立刻停用全部 /api/ 接口（返回 503），改完需重启服务。",
+  "enabled": true,
+
+  "_说明_deepseek": "DeepSeek API Key（从 DeepSeek 控制台复制，以两个字母 s/k 加连字符开头）。留空且没有环境变量 DEEPSEEK_API_KEY 时，生成作业会返回 500 中文错误。",
+  "deepseek_api_key": "",
+  "base_url": "https://api.deepseek.com",
+  "model": "deepseek-chat",
+  "job_reasoning_effort": "high",
+  "temperature": 0.2,
+  "max_tokens": 4096,
+
+  "_说明_监听": "只监听本机回环地址，由 nginx 反代 /api/；不要把 host 改成 0.0.0.0。",
+  "host": "127.0.0.1",
+  "port": 5000,
+
+  "_说明_护栏": "契约 §4 的硬护栏，默认值不要随意放大。",
+  "max_file_mb": 20,
+  "allowed_extensions": ["pdf", "pptx", "docx", "txt", "png", "jpg", "jpeg", "webp"],
+  "per_ip_daily_limit": 5,
+  "global_daily_limit": 50,
+  "llm_timeout_seconds": 120,
+  "tex_timeout_seconds": 60,
+  "tex_memory_limit_mb": 900,
+  "queue_concurrency": 1,
+  "queue_max_size": 20,
+  "artifact_ttl_seconds": 7200,
+  "cleanup_interval_seconds": 300,
+
+  "_说明_抽取": "max_input_chars 控制送进大模型的文本长度；max_pdf_pages 防止超大 PDF 拖垮内存。",
+  "max_input_chars": 60000,
+  "max_pdf_pages": 80,
+  "ocr_lang": "chi_sim+eng",
+
+  "_说明_路径": "相对路径按 服务/ 目录解析。english_notes_path 留空 = 自动找 内容/笔记/英语/ 或旧路径。",
+  "data_dir": "data",
+  "templates_dir": "templates",
+  "prompts_dir": "prompts",
+  "english_notes_path": "",
+
+  "_说明_LaTeX": "compile_pdf=false 仅供本地无 TeX 的机器测试，生产必须为 true。xelatex_path 留空 = 从 PATH 查找。",
+  "compile_pdf": true,
+  "xelatex_path": "",
+
+  "_说明_其它": "trust_proxy=true 表示只信任本机 nginx 传来的 X-Real-IP；version 会出现在 /api/health。",
+  "trust_proxy": true,
+  "version": "1.0.0"
+}

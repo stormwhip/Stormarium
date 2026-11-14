@@ -1,0 +1,1391 @@
+# MIT 18.06 线性代数计算笔记
+
+Lecture 1–17 选编　｜　版本 1.1　｜　2026-11-08
+
+## Lecture 1：线性方程组的几何解释
+
+本讲把同一个方程组分别看成平面的交点与列向量的线性组合。先学会转换表示，再判断解的情况。
+
+### 1.1 从方程组写出矩阵式
+
+**适用**　已知线性方程组，需要整理系数、未知量和常数项。
+
+**步骤**　固定未知量顺序；逐行抄出系数，缺项补零；把常数写成同一顺序的列向量。
+
+**例题**　把下面方程组写成矩阵式：
+$$
+\begin{cases}x_1+x_2+x_3=2,\\2x_1-x_2+x_3=-1,\\x_1+2x_2-x_3=6.\end{cases}
+$$
+按未知量 $x_1,x_2,x_3$ 的顺序排列：
+$$
+A=\begin{bmatrix}1&1&1\\2&-1&1\\1&2&-1\end{bmatrix},\quad x=\begin{bmatrix}x_1\\x_2\\x_3\end{bmatrix},\quad b=\begin{bmatrix}2\\-1\\6\end{bmatrix},\quad Ax=b.
+$$
+每行对应三维空间中的一个平面。三个平面的公共点为
+$$
+x=\begin{bmatrix}1\\2\\-1\end{bmatrix}.
+$$
+
+
+**验算**　$Ax=\begin{bmatrix}2\\-1\\6\end{bmatrix}=b$，三个方程均成立。
+
+**易错**　换未知量顺序时必须同时交换矩阵的列；常数项不能混入系数矩阵。
+
+### 1.2 把矩阵乘向量写成列组合
+
+**适用**　想理解 $Ax=b$ 是否能由 $A$ 的列向量拼出 $b$。
+
+**步骤**　记 $A=[a_1\ a_2\ a_3]$；用 $x_i$ 乘第 $i$ 列，再逐项相加。
+
+**例题**　
+$$
+A=\begin{bmatrix}1&2&0\\0&1&1\\2&0&1\end{bmatrix},\quad x=\begin{bmatrix}2\\-1\\3\end{bmatrix}.
+$$
+求 $Ax$。按列展开：
+$$
+Ax=2\begin{bmatrix}1\\0\\2\end{bmatrix}-\begin{bmatrix}2\\1\\0\end{bmatrix}+3\begin{bmatrix}0\\1\\1\end{bmatrix}=\begin{bmatrix}0\\2\\7\end{bmatrix}.
+$$
+因此 $b$ 是三列的线性组合，组合系数依次是 $2,-1,3$。
+
+**验算**　按行计算得到 $Ax=(2-2,\,-1+3,\,4+3)^T=(0,2,7)^T$。
+
+**易错**　系数乘的是整列；不能把 $x_i$ 与第 $i$ 行对应。
+
+### 1.3 区分唯一解、无解和无穷多解
+
+**适用**　观察独立约束是否足够，以及方程之间是否相容。此处先看简单结构，系统消元放在下一讲。
+
+**步骤**　先找能直接求出的未知量；若某行是其他行的和，就比较右端项是否也满足同样关系。
+
+**例题**　情形一：
+$$
+A=\begin{bmatrix}1&0&2\\0&1&-1\\0&0&3\end{bmatrix},\quad b=\begin{bmatrix}5\\0\\6\end{bmatrix}.
+$$
+第三行给 $x_3=2$，第二行给 $x_2=2$，第一行给 $x_1=1$，故唯一解为 $x=(1,2,2)^T$。
+
+情形二、三使用同一组系数，比较两个右端项：
+$$
+B=\begin{bmatrix}1&1&0\\0&1&1\\1&2&1\end{bmatrix},\quad c=\begin{bmatrix}2\\3\\5\end{bmatrix},\quad d=\begin{bmatrix}2\\3\\6\end{bmatrix}.
+$$
+第三行是前两行之和。对 $Bx=c$，第三个常数也是前两个之和，令 $x_3=t$ 得
+$$
+x=\begin{bmatrix}-1\\3\\0\end{bmatrix}+t\begin{bmatrix}1\\-1\\1\end{bmatrix},\quad t\in\mathbb R.
+$$
+对 $Bx=d$，却要求 $2+3=6$，所以无解。
+
+**验算**　唯一解代回 $Ax=b$；无穷多解检查 $Bx_p=c$、$Bs=0$；无解检查常数项矛盾。
+
+**易错**　方程多并不保证唯一解；关键在于独立约束和相容性。
+
+## Lecture 2：矩阵消元
+
+消元的目标是逐步减少未知量之间的耦合。每次行变换都必须同时作用于右端项。
+
+### 2.1 高斯消元与回代
+
+**适用**　方程组需要先化为上三角形，再自下而上求解。
+
+**步骤**　选择非零主元；用“目标行减倍数乘主元行”消元；得到上三角方程组后回代。
+
+**例题**　
+$$
+A=\begin{bmatrix}2&1&-1\\4&3&1\\-2&1&2\end{bmatrix},\quad b=\begin{bmatrix}-3\\1\\2\end{bmatrix}.
+$$
+先做 $R_2\leftarrow R_2-2R_1$、$R_3\leftarrow R_3+R_1$，再做 $R_3\leftarrow R_3-2R_2$：
+$$
+[A\mid b]\longrightarrow \begin{bmatrix}2&1&-1&-3\\0&1&3&7\\0&2&1&-1\end{bmatrix}\longrightarrow \begin{bmatrix}2&1&-1&-3\\0&1&3&7\\0&0&-5&-15\end{bmatrix}.
+$$
+回代：$-5x_3=-15$，$x_2+3x_3=7$，$2x_1+x_2-x_3=-3$，得到
+$$
+x=\begin{bmatrix}1\\-2\\3\end{bmatrix}.
+$$
+
+
+**验算**　$Ax=\begin{bmatrix}-3\\1\\2\end{bmatrix}=b$。
+
+**易错**　后一步使用的是已经更新的行；不要继续使用消元前的旧数据。
+
+### 2.2 用消元矩阵表示行变换
+
+**适用**　需要把一次行操作写成矩阵乘法，或恢复被消去的行。
+
+**步骤**　在单位矩阵上实施同样的行变换得到 $E$；左乘 $A$；恢复时用 $E^{-1}$。
+
+**例题**　
+$$
+A=\begin{bmatrix}1&2&-1\\3&5&2\\2&-1&4\end{bmatrix}.
+$$
+要做 $R_2\leftarrow R_2-3R_1$，在 $I$ 上做同样操作：
+$$
+E=\begin{bmatrix}1&0&0\\-3&1&0\\0&0&1\end{bmatrix},\qquad EA=\begin{bmatrix}1&2&-1\\0&-1&5\\2&-1&4\end{bmatrix}.
+$$
+逆操作为 $R_2\leftarrow R_2+3R_1$，因此
+$$
+E^{-1}=\begin{bmatrix}1&0&0\\3&1&0\\0&0&1\end{bmatrix}.
+$$
+
+
+**验算**　$E^{-1}(EA)=A$，且只有第二行发生变化。
+
+**易错**　行变换对应左乘；连续先做 $E_1$ 再做 $E_2$，总矩阵是 $E_2E_1$。
+
+### 2.3 主元为零时换行
+
+**适用**　当前位置主元为零，但同列下方仍有非零元素。
+
+**步骤**　先交换行，把非零元素移到主元位置；同步交换右端项；继续消元。
+
+**例题**　
+$$
+A=\begin{bmatrix}0&2&1\\1&-1&2\\2&1&0\end{bmatrix},\quad b=\begin{bmatrix}1\\-1\\5\end{bmatrix}.
+$$
+交换 $R_1,R_2$：
+$$
+[PA\mid Pb]=\begin{bmatrix}1&-1&2&-1\\0&2&1&1\\2&1&0&5\end{bmatrix}.
+$$
+再做 $R_3\leftarrow R_3-2R_1$、$R_3\leftarrow R_3-\frac32R_2$：
+$$
+[U\mid c]=\begin{bmatrix}1&-1&2&-1\\0&2&1&1\\0&0&- \frac{11}{2}&\frac{11}{2}\end{bmatrix}.
+$$
+回代得到 $x_3=-1$、$x_2=1$、$x_1=2$。
+
+**验算**　$A(2,1,-1)^T=b$。
+
+**易错**　某个主元为零不等于矩阵不可逆；应先检查能否换行。
+
+### 2.4 从矛盾行判定无解
+
+**适用**　消元时系数行变成零，但对应常数不为零。
+
+**步骤**　先消去线性相关的行；观察是否出现 $[0\ \cdots\ 0\mid c]$ 且 $c\ne0$。
+
+**例题**　
+$$
+A=\begin{bmatrix}1&2&1\\2&4&2\\0&1&-1\end{bmatrix},\quad b=\begin{bmatrix}3\\7\\0\end{bmatrix}.
+$$
+做 $R_2\leftarrow R_2-2R_1$：
+$$
+\begin{bmatrix}1&2&1&3\\0&0&0&1\\0&1&-1&0\end{bmatrix}.
+$$
+第二行要求 $0=1$，因此无解，后续未知量无需继续求。
+
+**验算**　原方程左端第二行是第一行的两倍，但 $7\ne2\times3$。
+
+**易错**　零系数行且右端也为零，只表示冗余约束，不是矛盾。
+
+## Lecture 3：矩阵乘法与逆矩阵
+
+先掌握矩阵乘法的四种组织方式，再用行变换求逆。四种乘法使用四组独立数据。
+
+### 3.1 行乘列：逐元素计算
+
+**适用**　需要积矩阵的少数元素，或矩阵没有明显结构。
+
+**步骤**　若 $A$ 为 $m\times n$、$B$ 为 $n\times p$，则 $c_{ij}=\sum_{k=1}^n a_{ik}b_{kj}$；每个元素用一行点乘一列。
+
+**例题**　
+$$
+A=\begin{bmatrix}1&2&-1\\0&3&2\\2&-1&1\end{bmatrix},\quad B=\begin{bmatrix}2&0&1\\1&-2&3\\0&1&2\end{bmatrix}.
+$$
+例如第一行第三列为 $1\times1+2\times3+(-1)\times2=5$。逐项计算得
+$$
+AB=\begin{bmatrix}4&-5&5\\3&-4&13\\3&3&1\end{bmatrix}.
+$$
+
+
+**验算**　另查 $c_{32}=2\times0+(-1)(-2)+1\times1=3$，与结果一致。
+
+**易错**　相乘条件是内侧维数相同；结果的行数来自 $A$，列数来自 $B$。
+
+### 3.2 按列计算矩阵乘积
+
+**适用**　右矩阵各列较稀疏，适合把积矩阵逐列求出。
+
+**步骤**　写 $B=[b_1\ b_2\ b_3]$，则 $AB=[Ab_1\ Ab_2\ Ab_3]$；每列再看成 $A$ 的列组合。
+
+**例题**　
+$$
+A=\begin{bmatrix}2&0&1\\1&1&-1\\0&2&3\end{bmatrix},\quad B=\begin{bmatrix}1&0&2\\0&1&-1\\1&2&0\end{bmatrix}.
+$$
+
+$$
+\begin{aligned}
+Ab_1=a_1+a_3=\begin{bmatrix}3\\0\\3\end{bmatrix}, \\Ab_2=a_2+2a_3=\begin{bmatrix}2\\-1\\8\end{bmatrix}, \\Ab_3=2a_1-a_2=\begin{bmatrix}4\\1\\-2\end{bmatrix}.
+\end{aligned}
+$$
+把三列按原顺序拼回：
+$$
+AB=\begin{bmatrix}3&2&4\\0&-1&1\\3&8&-2\end{bmatrix}.
+$$
+
+
+**验算**　检查第一列第一项 $2\times1+0\times0+1\times1=3$。
+
+**易错**　这是按 $B$ 的列分解；列组合的素材取自 $A$。
+
+### 3.3 按行计算矩阵乘积
+
+**适用**　左矩阵各行较稀疏，适合把积矩阵逐行求出。
+
+**步骤**　记 $B$ 的行为 $r_1,r_2,r_3$；$AB$ 的第 $i$ 行为 $a_{i1}r_1+a_{i2}r_2+a_{i3}r_3$。
+
+**例题**　
+$$
+A=\begin{bmatrix}1&0&2\\0&-1&1\\2&1&0\end{bmatrix},\quad B=\begin{bmatrix}1&3&0\\2&-1&1\\0&2&4\end{bmatrix}.
+$$
+
+$$
+\begin{aligned}
+(AB)_{1,:}=r_1+2r_3=\begin{bmatrix}1&7&8\end{bmatrix}, \\(AB)_{2,:}=-r_2+r_3=\begin{bmatrix}-2&3&3\end{bmatrix}, \\(AB)_{3,:}=2r_1+r_2=\begin{bmatrix}4&5&1\end{bmatrix}.
+\end{aligned}
+$$
+
+$$
+AB=\begin{bmatrix}1&7&8\\-2&3&3\\4&5&1\end{bmatrix}.
+$$
+
+
+**验算**　第一行第二项也可由 $1\times3+0\times(-1)+2\times2=7$ 得到。
+
+**易错**　行组合的系数来自 $A$ 的行，被组合的是 $B$ 的行。
+
+### 3.4 列乘行：外积之和
+
+**适用**　需要把乘积拆成秩至多为一的简单矩阵，或利用非零列、行对。
+
+**步骤**　写 $A=[a_1\ a_2\ a_3]$，记 $B$ 的行为 $r_k$；计算 $AB=\sum_{k=1}^3a_kr_k$。
+
+**例题**　
+$$
+A=\begin{bmatrix}1&0&-1\\2&1&0\\0&3&1\end{bmatrix},\quad B=\begin{bmatrix}2&1&0\\0&-1&2\\1&0&3\end{bmatrix}.
+$$
+每项取左矩阵的一列乘右矩阵的对应行：
+$$
+\begin{aligned}
+a_1r_1=\begin{bmatrix}2&1&0\\4&2&0\\0&0&0\end{bmatrix}, \\a_2r_2=\begin{bmatrix}0&0&0\\0&-1&2\\0&-3&6\end{bmatrix}, \\a_3r_3=\begin{bmatrix}-1&0&-3\\0&0&0\\1&0&3\end{bmatrix}.
+\end{aligned}
+$$
+
+$$
+AB=a_1r_1+a_2r_2+a_3r_3=\begin{bmatrix}1&1&-3\\4&1&2\\1&-3&9\end{bmatrix}.
+$$
+
+
+**验算**　按行乘列检查 $(AB)_{23}=2\times0+1\times2+0\times3=2$。
+
+**易错**　外积的结果是矩阵；不要误算成行乘列得到的标量。
+
+### 3.5 Gauss–Jordan 消元求逆
+
+**适用**　$A$ 是方阵，并且能够消元得到单位矩阵。
+
+**步骤**　把单位矩阵接在右侧；所有行操作同步作用于整个增广矩阵；左侧变为 $I$ 后，右侧就是逆矩阵。
+
+**例题**　
+$$
+A=\begin{bmatrix}1&1&0\\0&1&1\\1&0&0\end{bmatrix}.
+$$
+先做 $R_3\leftarrow R_3-R_1$、$R_3\leftarrow R_3+R_2$：
+$$
+[A\mid I]\longrightarrow \begin{bmatrix}1&1&0&1&0&0\\0&1&1&0&1&0\\0&0&1&-1&1&1\end{bmatrix}.
+$$
+再做 $R_2\leftarrow R_2-R_3$、$R_1\leftarrow R_1-R_2$：
+$$
+[I\mid A^{-1}]=\begin{bmatrix}1&0&0&0&0&1\\0&1&0&1&0&-1\\0&0&1&-1&1&1\end{bmatrix}.
+$$
+
+
+**验算**　$AA^{-1}=A^{-1}A=I$。
+
+**易错**　右侧必须跟着做全部行操作；不能只把 $A$ 化简后再拼一个单位矩阵。
+
+### 3.6 用消元判断不可逆
+
+**适用**　方阵是否有逆尚不确定。
+
+**步骤**　先消元；若缺少某列主元，或出现零行，秩就小于阶数，矩阵不可逆。
+
+**例题**　
+$$
+A=\begin{bmatrix}1&2&3\\0&1&1\\1&3&4\end{bmatrix}.
+$$
+做 $R_3\leftarrow R_3-R_1-R_2$，得到零行；继续化简：
+$$
+R=\begin{bmatrix}1&0&1\\0&1&1\\0&0&0\end{bmatrix}.
+$$
+只有两个主元，$\operatorname{rank}(A)=2<3$，所以 $A^{-1}$ 不存在。
+
+**验算**　$A(-1,-1,1)^T=0$，存在非零零空间向量。
+
+**易错**　只有方阵才讨论通常意义的双侧逆；满秩的非方阵也不应直接记作 $A^{-1}$。
+
+### 3.7 计算矩阵乘积的逆
+
+**适用**　乘积中的每个方阵均可逆。
+
+**步骤**　把乘积的因子顺序反过来，再分别求逆：$(AB)^{-1}=B^{-1}A^{-1}$。
+
+**例题**　
+$$
+A=\begin{bmatrix}1&0&1\\0&1&0\\0&0&1\end{bmatrix},\quad B=\begin{bmatrix}1&0&0\\2&1&0\\0&0&1\end{bmatrix}.
+$$
+
+$$
+A^{-1}=\begin{bmatrix}1&0&-1\\0&1&0\\0&0&1\end{bmatrix},\quad B^{-1}=\begin{bmatrix}1&0&0\\-2&1&0\\0&0&1\end{bmatrix}.
+$$
+
+$$
+(AB)^{-1}=B^{-1}A^{-1}=\begin{bmatrix}1&0&-1\\-2&1&2\\0&0&1\end{bmatrix}.
+$$
+
+
+**验算**　直接相乘有 $(AB)(B^{-1}A^{-1})=I$；本题 $A^{-1}B^{-1}$ 的 $(2,3)$ 项为 $0$，而正确结果该项为 $2$。
+
+**易错**　一般不能交换矩阵乘法顺序；逆矩阵的顺序必须倒置。
+
+## Lecture 4：分解为 A = LU
+
+把消元过程保存下来，就可以重复求解同一系数矩阵对应的不同方程组。这里的 L 对角线统一为 1。
+
+### 4.1 从消元倍数构造 LU 分解
+
+**适用**　方阵消元时无需换行，并且各步主元非零。
+
+**步骤**　把消元后的上三角矩阵记作 $U$；把第 $i$ 行消去第 $j$ 列时的倍数 $l_{ij}$ 填入 $L$ 的对应位置。
+
+**例题**　
+$$
+A=\begin{bmatrix}2&1&0\\4&5&1\\-2&8&5\end{bmatrix}.
+$$
+操作为 $R_2\leftarrow R_2-2R_1$、$R_3\leftarrow R_3+R_1$、$R_3\leftarrow R_3-3R_2$。倍数分别为 $2,-1,3$，所以
+$$
+L=\begin{bmatrix}1&0&0\\2&1&0\\-1&3&1\end{bmatrix},\quad U=\begin{bmatrix}2&1&0\\0&3&1\\0&0&2\end{bmatrix},\quad A=LU.
+$$
+
+
+**验算**　相乘 $LU=\begin{bmatrix}2&1&0\\4&5&1\\-2&8&5\end{bmatrix}=A$。
+
+**易错**　$L$ 中填消元倍数本身；消元矩阵中对应位置才是倍数的相反数。
+
+### 4.2 前代、回代与多右端项复用
+
+**适用**　已经知道 $A=LU$，需要求一个或多个右端项对应的解。
+
+**步骤**　先从上向下解 $Ly=b$；再从下向上解 $Ux=y$。换右端项时复用同一组 $L,U$。
+
+**例题**　
+$$
+A=\begin{bmatrix}1&2&1\\-1&0&-2\\2&6&4\end{bmatrix},\quad L=\begin{bmatrix}1&0&0\\-1&1&0\\2&1&1\end{bmatrix},\quad U=\begin{bmatrix}1&2&1\\0&2&-1\\0&0&3\end{bmatrix}.
+$$
+第一组右端项为 $b_1=\begin{bmatrix}1\\-5\\4\end{bmatrix}$。前代依次得
+$$
+y_1=\begin{bmatrix}1\\-4\\6\end{bmatrix}.
+$$
+回代：$3x_3=6$，$2x_2-x_3=-4$，$x_1+2x_2+x_3=1$，得到 $x^{(1)}=(1,-1,2)^T$。
+
+第二组右端项为 $b_2=\begin{bmatrix}3\\0\\6\end{bmatrix}$，直接复用分解：
+$$
+Ly_2=b_2\Rightarrow y_2=\begin{bmatrix}3\\3\\-3\end{bmatrix},\qquad Ux^{(2)}=y_2\Rightarrow x^{(2)}=\begin{bmatrix}2\\1\\-1\end{bmatrix}.
+$$
+
+
+**验算**　$Ax^{(1)}=b_1$、$Ax^{(2)}=b_2$；两个方程组不需要重复分解。
+
+**易错**　$Ly=b$ 用前代，$Ux=y$ 用回代；不要把两个右端项混用。
+
+### 4.3 需要换行时计算 PA = LU
+
+**适用**　消元前需要交换行。这里示范首步换行的情形。
+
+**步骤**　把换行记作 $P$；对 $PA$ 进行普通消元得到 $L,U$；解方程时同步改用 $Pb$。
+
+**例题**　
+$$
+A=\begin{bmatrix}0&2&1\\1&1&0\\2&0&2\end{bmatrix},\quad b=\begin{bmatrix}3\\3\\0\end{bmatrix}.
+$$
+交换前两行，再用倍数 $2,-1$ 消去第三行的前两项：
+$$
+P=\begin{bmatrix}0&1&0\\1&0&0\\0&0&1\end{bmatrix},\quad L=\begin{bmatrix}1&0&0\\0&1&0\\2&-1&1\end{bmatrix},\quad U=\begin{bmatrix}1&1&0\\0&2&1\\0&0&3\end{bmatrix}.
+$$
+
+$$
+PA=LU,\qquad Pb=\begin{bmatrix}3\\3\\0\end{bmatrix}.
+$$
+前代 $Ly=Pb$ 得 $y=(3,3,-3)^T$，回代得 $x=(1,2,-1)^T$。
+
+**验算**　$PA=LU$ 且 $Ax=b$。
+
+**易错**　若消元进行到中途才换行，$L$ 中此前已记录的相应行部分也要同步交换。
+
+## Lecture 5：转置、置换与实向量空间
+
+本讲区分矩阵的行、列操作，并开始检查向量集合是否构成子空间。
+
+### 5.1 转置与乘积转置
+
+**适用**　需要交换行列，或把矩阵乘积整体转置。
+
+**步骤**　把 $(i,j)$ 元移到 $(j,i)$；乘积转置时反转顺序：$(AB)^T=B^TA^T$。
+
+**例题**　
+$$
+A=\begin{bmatrix}1&-1&2\\0&2&1\\3&0&1\end{bmatrix},\quad B=\begin{bmatrix}0&1&2\\1&0&-1\\2&1&0\end{bmatrix}.
+$$
+
+$$
+A^T=\begin{bmatrix}1&0&3\\-1&2&0\\2&1&1\end{bmatrix},\quad B^T=\begin{bmatrix}0&1&2\\1&0&1\\2&-1&0\end{bmatrix}.
+$$
+
+$$
+(AB)^T=B^TA^T=\begin{bmatrix}3&4&2\\3&1&4\\3&-2&6\end{bmatrix}.
+$$
+
+
+**验算**　先求 $AB$ 再交换行列，得到相同结果。
+
+**易错**　一般 $(AB)^T\ne A^TB^T$；转置不是求逆。
+
+### 5.2 置换矩阵的左乘与右乘
+
+**适用**　需要用矩阵表示交换行或交换列。
+
+**步骤**　对 $I$ 交换两行得到 $P$；$PA$ 交换 $A$ 的对应行，$AP$ 交换对应列。
+
+**例题**　
+$$
+A=\begin{bmatrix}1&2&4\\3&5&7\\6&8&9\end{bmatrix},\quad P=\begin{bmatrix}0&1&0\\1&0&0\\0&0&1\end{bmatrix}.
+$$
+
+$$
+PA=\begin{bmatrix}3&5&7\\1&2&4\\6&8&9\end{bmatrix},\qquad AP=\begin{bmatrix}2&1&4\\5&3&7\\8&6&9\end{bmatrix}.
+$$
+本题左乘交换第 1、2 行，右乘交换第 1、2 列。
+
+**验算**　$P^TP=I$，交换两次恢复原矩阵：$P(PA)=A$、$(AP)P=A$。
+
+**易错**　一般置换要用 $P^{-1}=P^T$ 恢复；本题单次对换才满足 $P^{-1}=P$。
+
+### 5.3 计算 A 的转置乘 A 并检查对称性
+
+**适用**　要计算列向量之间的内积，或构造一个对称矩阵。
+
+**步骤**　$A^TA$ 的 $(i,j)$ 元是第 $i,j$ 列的内积；先算对角和上三角，再利用对称性补齐。
+
+**例题**　
+$$
+A=\begin{bmatrix}1&1&0\\2&0&1\\0&1&2\end{bmatrix}.
+$$
+例如 $g_{11}=1^2+2^2+0^2=5$，$g_{12}=1\times1+2\times0+0\times1=1$，$g_{23}=0+0+2=2$。
+$$
+A^TA=\begin{bmatrix}5&1&2\\1&2&2\\2&2&5\end{bmatrix}.
+$$
+
+
+**验算**　结果与其转置相同；对角线是各列长度的平方，均非负。
+
+**易错**　$A^TA$ 与 $AA^T$ 通常不同；对非方阵，两者的阶数也可能不同。
+
+### 5.4 检验子空间并写成参数形式
+
+**适用**　集合由向量约束给出，需要判断是否为子空间。
+
+**步骤**　检查零向量、加法与数乘封闭性；齐次线性约束可以直接用其线性性质验证；再把受约束变量表示成自由参数。
+
+**例题**　考虑 $S=\{x\in\mathbb R^3:Ax=0\}$，其中
+$$
+A=\begin{bmatrix}1&1&1\\2&2&2\\3&3&3\end{bmatrix}.
+$$
+三个约束等价于 $x_1+x_2+x_3=0$。零向量满足约束；若 $Au=Av=0$，则 $A(\alpha u+\beta v)=0$，故 $S$ 是子空间。令 $x_2=s,x_3=t$：
+$$
+x=s\begin{bmatrix}-1\\1\\0\end{bmatrix}+t\begin{bmatrix}-1\\0\\1\end{bmatrix},\quad s,t\in\mathbb R.
+$$
+对比 $T=\{x:Ax=(1,2,3)^T\}$：零向量不满足，所以 $T$ 不是子空间。
+
+**验算**　参数式中任意向量都满足三行约束；$s=t=0$ 时得到零向量。
+
+**易错**　只检查加法不够；只要零向量不在集合内，就可直接否定。
+
+## Lecture 6：列空间与零空间
+
+列空间回答“哪些右端项能够求解”，零空间回答“哪些输入会得到零”。本讲先用直接关系计算，第 7 讲再系统构造特殊解。
+
+### 6.1 判断向量是否属于列空间
+
+**适用**　给定 $b$，判断它是否可写成 $A$ 的列向量的线性组合。
+
+**步骤**　解 $Ax=b$；存在解就属于 $C(A)$。有明显的行关系时，可以先写出右端项必须满足的条件。
+
+**例题**　
+$$
+A=\begin{bmatrix}1&0&1\\0&1&1\\1&1&2\end{bmatrix},\quad b=\begin{bmatrix}2\\3\\5\end{bmatrix}.
+$$
+第三行是前两行之和，故可解条件为 $b_3=b_1+b_2$。本题 $5=2+3$，并且
+$$
+A\begin{bmatrix}2\\3\\0\end{bmatrix}=\begin{bmatrix}2\\3\\5\end{bmatrix}.
+$$
+所以 $b\in C(A)$。相反，$c=(2,3,6)^T$ 不满足该关系，故 $c\notin C(A)$。
+
+**验算**　直接求出组合 $b=2a_1+3a_2$，不只停留在条件判断。
+
+**易错**　属于列空间只要求存在一个解，不要求解唯一。
+
+### 6.2 利用主元列计算列空间的基
+
+**适用**　需要从原矩阵的列中选出独立生成向量。
+
+**步骤**　对 $A$ 行化简；记录主元所在列号；回到原矩阵取对应列。
+
+**例题**　
+$$
+A=\begin{bmatrix}1&2&0&3\\0&0&1&1\\2&4&1&7\end{bmatrix}\longrightarrow R=\begin{bmatrix}1&2&0&3\\0&0&1&1\\0&0&0&0\end{bmatrix}.
+$$
+主元在第 1、3 列，因此
+$$
+\mathcal B_{C(A)}=\left\{\begin{bmatrix}1\\0\\2\end{bmatrix},\;\begin{bmatrix}0\\1\\1\end{bmatrix}\right\},\qquad \dim C(A)=2.
+$$
+原矩阵另外两列满足 $a_2=2a_1$、$a_4=3a_1+a_3$，所以两列已能生成全部列。
+
+**验算**　所选两列线性无关，且每个未选列均可由它们组合得到。
+
+**易错**　行变换一般改变列空间；$R$ 的主元列只提供列号，不能直接替代 $A$ 的列。
+
+### 6.3 由阶梯方程直接读出零空间
+
+**适用**　矩阵已是简单阶梯形，未知量之间的关系容易回代。
+
+**步骤**　令无主元列对应变量为参数；由下往上表示主元变量；把参数提取到向量前。
+
+**例题**　
+$$
+A=\begin{bmatrix}1&2&-1\\0&1&3\\0&0&0\end{bmatrix},\quad Ax=0.
+$$
+第二行给 $x_2=-3x_3$，第一行给 $x_1=-2x_2+x_3=7x_3$。令 $x_3=t$：
+$$
+x=t\begin{bmatrix}7\\-3\\1\end{bmatrix},\quad N(A)=\operatorname{span}\left\{\begin{bmatrix}7\\-3\\1\end{bmatrix}\right\}.
+$$
+零空间位于 $\mathbb R^3$，维数为 1。
+
+**验算**　$A(7,-3,1)^T=0$。
+
+**易错**　零空间一定包含零向量；参数取零不能被排除。
+
+## Lecture 7：求解 Ax = 0：主元变量与特殊解
+
+每个自由变量对应一个特殊解。把特殊解放成列，就得到零空间的一组基。
+
+### 7.1 行最简形与特殊解
+
+**适用**　一般齐次方程组，需要系统求出全部解。
+
+**步骤**　化为 $R$；找自由变量；每次只令一个自由变量为 1，其余为 0，再求主元变量。
+
+**例题**　
+$$
+A=\begin{bmatrix}1&2&1&0\\2&4&3&1\\1&2&2&1\end{bmatrix}\longrightarrow R=\begin{bmatrix}1&2&0&-1\\0&0&1&1\\0&0&0&0\end{bmatrix}.
+$$
+可先做 $R_2\leftarrow R_2-2R_1$、$R_3\leftarrow R_3-R_1$，再消去重复行和主元上方元素。主元变量为 $x_1,x_3$，自由变量为 $x_2,x_4$。
+
+令 $(x_2,x_4)=(1,0)$ 和 $(0,1)$，分别得到
+$$
+s_1=\begin{bmatrix}-2\\1\\0\\0\end{bmatrix},\quad s_2=\begin{bmatrix}1\\0\\-1\\1\end{bmatrix}.
+$$
+
+$$
+x=c_1s_1+c_2s_2,\qquad c_1,c_2\in\mathbb R.
+$$
+
+
+**验算**　$As_1=As_2=0$，两特殊解的自由分量构成 $2\times2$ 单位阵，所以线性无关。
+
+**易错**　特殊解是齐次解的基向量，不是非齐次方程的特解。
+
+### 7.2 从标准分块形式直接构造零空间矩阵
+
+**适用**　主元列已排在前面，行最简形的非零部分为 $[I\ F]$。
+
+**步骤**　由 $x_p+Fx_f=0$ 得 $x_p=-Fx_f$；因此全部解为 $x=Nx_f$，其中 $N=\binom{-F}{I}$。
+
+**例题**　
+$$
+A=\begin{bmatrix}1&0&2&-1\\0&1&-1&3\\1&1&1&2\end{bmatrix}\longrightarrow R=\begin{bmatrix}1&0&2&-1\\0&1&-1&3\\0&0&0&0\end{bmatrix}.
+$$
+前两列为主元列，后两列为自由列。取 $F$ 为前两行后两列：
+$$
+F=\begin{bmatrix}2&-1\\-1&3\end{bmatrix},\quad N=\begin{bmatrix}-2&1\\1&-3\\1&0\\0&1\end{bmatrix}.
+$$
+
+$$
+x=N\begin{bmatrix}s\\t\end{bmatrix},\qquad s,t\in\mathbb R.
+$$
+矩阵 $N$ 的两列就是零空间基。这里出现的 $2\times2$ 块只是原矩阵计算中的分块。
+
+**验算**　$AN=0$；$N$ 的最后两行是单位阵，保证两个基向量独立。
+
+**易错**　只有在主元变量和自由变量按对应顺序排列后，才能直接套用这个分块表达式。
+
+### 7.3 主元列不连续时还原变量顺序
+
+**适用**　自由列与主元列交错，或第一列本身就是自由列。
+
+**步骤**　按原列号标记变量；直接逐个设置自由变量；最终向量仍按 $x_1,x_2,\ldots$ 排列。若先交换列，最后必须逆置换。
+
+**例题**　
+$$
+A=\begin{bmatrix}0&1&2&3\\0&2&4&6\\0&1&3&4\end{bmatrix}\longrightarrow R=\begin{bmatrix}0&1&0&1\\0&0&1&1\\0&0&0&0\end{bmatrix}.
+$$
+主元列为第 2、3 列，自由变量是 $x_1,x_4$；方程为 $x_2+x_4=0$、$x_3+x_4=0$。因此
+$$
+x=s\begin{bmatrix}1\\0\\0\\0\end{bmatrix}+t\begin{bmatrix}0\\-1\\-1\\1\end{bmatrix},\quad s,t\in\mathbb R.
+$$
+
+
+**验算**　将两个向量分别代入 $A$，结果均为零。第一列全零，所以 $(1,0,0,0)^T$ 必在零空间中。
+
+**易错**　不能见到两个主元就默认 $x_1,x_2$ 为主元变量；应看实际列号。
+
+## Lecture 8：求解 Ax = b：行最简形
+
+非齐次方程先判断是否相容，再求一个特解，最后加上全部齐次解。
+
+### 8.1 对含参数右端项求相容条件
+
+**适用**　系数矩阵固定，右端项含一个或多个参数。
+
+**步骤**　对系数部分消元；同样操作作用于右端；每个零系数行对应一个必须为零的线性表达式。
+
+**例题**　
+$$
+A=\begin{bmatrix}1&1&0\\0&1&2\\1&2&2\end{bmatrix},\quad b=\begin{bmatrix}b_{1}\\b_{2}\\b_{3}\end{bmatrix}.
+$$
+做 $R_3\leftarrow R_3-R_1-R_2$：
+$$
+\begin{bmatrix}1&1&0&b_{1}\\0&1&2&b_{2}\\0&0&0&- b_{1} - b_{2} + b_{3}\end{bmatrix}.
+$$
+所以相容条件为
+$$
+b_3=b_1+b_2.
+$$
+相容时令 $x_3=t$，由第二行得 $x_2=b_2-2t$，再由第一行得 $x_1=b_1-b_2+2t$。
+
+**验算**　代入第三行得到 $x_1+2x_2+2x_3=b_1+b_2$，与相容条件一致。
+
+**易错**　相容条件来自零系数行的右端，不是要求右端项的每个分量都为零。
+
+### 8.2 特解加齐次解：写出全部非齐次解
+
+**适用**　方程组相容，并存在自由变量。
+
+**步骤**　对 $[A\mid b]$ 化简；先令自由变量为零求 $x_p$；再求 $Ax_n=0$ 的特殊解；相加。
+
+**例题**　
+$$
+A=\begin{bmatrix}1&1&1&0\\0&1&2&1\\1&2&3&1\end{bmatrix},\quad b=\begin{bmatrix}1\\-1\\0\end{bmatrix}.
+$$
+做 $R_3\leftarrow R_3-R_1-R_2$、$R_1\leftarrow R_1-R_2$，得到
+$$
+[R\mid d]=\begin{bmatrix}1&0&-1&-1&2\\0&1&2&1&-1\\0&0&0&0&0\end{bmatrix}.
+$$
+自由变量为 $x_3,x_4$。令二者为零得 $x_p=(2,-1,0,0)^T$；再分别令自由变量为 $(1,0)$、$(0,1)$，得到
+$$
+s_1=\begin{bmatrix}1\\-2\\1\\0\end{bmatrix},\quad s_2=\begin{bmatrix}1\\-1\\0\\1\end{bmatrix}.
+$$
+
+$$
+x=\begin{bmatrix}2\\-1\\0\\0\end{bmatrix}+s\begin{bmatrix}1\\-2\\1\\0\end{bmatrix}+t\begin{bmatrix}1\\-1\\0\\1\end{bmatrix},\qquad s,t\in\mathbb R.
+$$
+
+
+**验算**　$Ax_p=b$、$As_1=As_2=0$，所以任意参数都给出同一右端项。
+
+**易错**　特解只需要找一个；齐次部分必须包含全部自由方向。
+
+### 8.3 用秩分类解的数量
+
+**适用**　已经得到阶梯形，需要快速确定解的类型。
+
+**步骤**　先比较 $r=\operatorname{rank}(A)$ 和 $\operatorname{rank}([A\mid b])$；不等则无解，相等则有解。相容时，$r=n$ 为唯一解，$r<n$ 为无穷多解。
+
+**例题**　
+$$
+A=\begin{bmatrix}1&0&2\\0&1&-1\\2&1&3\end{bmatrix},\quad b=\begin{bmatrix}1\\2\\4\end{bmatrix},\quad c=\begin{bmatrix}1\\2\\5\end{bmatrix}.
+$$
+对 $A$ 做 $R_3\leftarrow R_3-2R_1-R_2$ 得零行。$b_3=2b_1+b_2$，故两个秩均为 2，有一个自由变量；对 $c$，相同行操作的右端为 $1$，故增广矩阵秩为 3，无解。
+
+再看唯一解的例子：
+$$
+B=\begin{bmatrix}1&1&0\\0&1&2\\1&0&1\end{bmatrix},\quad d=\begin{bmatrix}3\\0\\2\end{bmatrix}.
+$$
+做 $R_3\leftarrow R_3-R_1$、$R_3\leftarrow R_3+R_2$，第三个主元为 $3$，所以两个秩均为 3，唯一解为
+$$
+x=\begin{bmatrix}\frac{7}{3}\\\frac{2}{3}\\- \frac{1}{3}\end{bmatrix}.
+$$
+
+
+**验算**　对相容系统，自由变量数一律为 $n-r$；唯一解代回 $Bx=d$。
+
+**易错**　未知量数量 $n$ 是列数；不要拿方程数量 $m$ 与秩比较来判断唯一性。
+
+## Lecture 9：线性无关、基与维数
+
+把向量并成矩阵后，主元列决定哪些向量独立；参数表示决定子空间需要多少个独立方向。
+
+### 9.1 用齐次方程判断线性无关
+
+**适用**　给定向量组，需要判断能否非平凡地组合成零。
+
+**步骤**　将向量作为列组成 $A$；求 $Ac=0$。只有零解则独立，有非零解则相关，并可读出关系式。
+
+**例题**　
+$$
+A=[v_1\ v_2\ v_3]=\begin{bmatrix}1&0&1\\1&1&2\\0&1&1\end{bmatrix}\longrightarrow R=\begin{bmatrix}1&0&1\\0&1&1\\0&0&0\end{bmatrix}.
+$$
+令 $c_3=t$，得到 $c_1=c_2=-t$。取 $t=1$ 得
+$$
+-v_1-v_2+v_3=0.
+$$
+所以三个向量线性相关，其中 $v_3=v_1+v_2$。
+
+**验算**　直接按坐标相加可验证；矩阵只有两个主元。
+
+**易错**　一个非零向量本身独立，但多个非零向量仍可能线性相关。
+
+### 9.2 从生成向量中筛选一组基
+
+**适用**　已知某子空间由若干向量生成，需要去掉冗余。
+
+**步骤**　将生成向量并为矩阵；行化简；取原矩阵的主元列；主元数就是维数。
+
+**例题**　
+$$
+A=\begin{bmatrix}1&2&0&1\\1&2&1&2\\1&2&2&3\end{bmatrix}\longrightarrow R=\begin{bmatrix}1&2&0&1\\0&0&1&1\\0&0&0&0\end{bmatrix}.
+$$
+主元列为第 1、3 列，所以
+$$
+\mathcal B=\left\{\begin{bmatrix}1\\1\\1\end{bmatrix},\;\begin{bmatrix}0\\1\\2\end{bmatrix}\right\},\quad \dim\operatorname{span}(v_1,v_2,v_3,v_4)=2.
+$$
+剩余列满足 $v_2=2v_1$、$v_4=v_1+v_3$，可以删去。
+
+**验算**　保留列独立，删去列仍能由保留列生成，两个条件都满足。
+
+**易错**　基必须既独立又能生成；不能仅凭向量数量判断是否为基。
+
+### 9.3 从线性约束计算子空间的基和维数
+
+**适用**　子空间以满足一组齐次方程的向量集合给出。
+
+**步骤**　把约束写为 $Ax=0$；消元识别独立约束；参数化并提取参数向量；参数向量独立时就是基。
+
+**例题**　求 $S=\{x\in\mathbb R^4:Ax=0\}$ 的基，其中
+$$
+A=\begin{bmatrix}1&1&0&1\\0&1&1&0\\1&2&1&1\end{bmatrix},\quad R=\begin{bmatrix}1&0&-1&1\\0&1&1&0\\0&0&0&0\end{bmatrix}.
+$$
+约束为 $x_1-x_3+x_4=0$、$x_2+x_3=0$。令 $x_3=s,x_4=t$：
+$$
+x=s\begin{bmatrix}1\\-1\\1\\0\end{bmatrix}+t\begin{bmatrix}-1\\0\\0\\1\end{bmatrix}.
+$$
+所以这两个参数向量构成 $S$ 的一组基，$\dim S=4-2=2$。
+
+**验算**　两个向量分别满足原来的三条约束；它们的自由分量独立。
+
+**易错**　第三条约束若由前两条相加得到，就不能再多减一次维数。
+
+### 9.4 把独立向量补成整个空间的一组基
+
+**适用**　已知几个独立向量，需要补成整个空间的一组基。
+
+**步骤**　依次尝试加入标准基向量；只保留能增加秩的列；达到所在空间的维数时停止。
+
+**例题**　已知 $v_1=(1,1,0)^T$、$v_2=(1,0,1)^T$。尝试加入 $e_1=(1,0,0)^T$，构成主体矩阵
+$$
+B=[v_1\ v_2\ e_1]=\begin{bmatrix}1&1&1\\1&0&0\\0&1&0\end{bmatrix}.
+$$
+做 $R_2\leftarrow R_2-R_1$、$R_3\leftarrow R_3+R_2$，主元依次为 $1,-1,-1$。因此 $\{v_1,v_2,e_1\}$ 是 $\mathbb R^3$ 的一组基。
+
+**验算**　三个主元说明三列独立；三个独立方向已经生成 $\mathbb R^3$。
+
+**易错**　不能任意添加一个向量就认为能补全基；添加后秩必须增加。
+
+### 9.5 求向量在给定基下的表示系数
+
+**适用**　基向量已给定，需要知道某个向量由它们怎样组合。
+
+**步骤**　按指定顺序将基向量排成列矩阵 $B$；解 $Bc=v$；系数列 $c$ 就是该基下的坐标。
+
+**例题**　
+$$
+B=[v_1\ v_2\ v_3]=\begin{bmatrix}1&1&0\\0&1&1\\1&0&2\end{bmatrix},\quad v=\begin{bmatrix}1\\2\\8\end{bmatrix}.
+$$
+方程为 $c_1+c_2=1$、$c_2+c_3=2$、$c_1+2c_3=8$。用前两式消去 $c_1,c_3$，第三式变为 $5-3c_2=8$，因此
+$$
+[v]_{\mathcal B}=c=\begin{bmatrix}2\\-1\\3\end{bmatrix}.
+$$
+
+
+**验算**　$2v_1-v_2+3v_3=v$。
+
+**易错**　基向量顺序改变，坐标分量的顺序也会改变；$v$ 的标准坐标通常不同于 $[v]_{\mathcal B}$。
+
+## Lecture 10：四个基本子空间
+
+对 m×n 矩阵，列空间与左零空间在实 m 维空间中，行空间与零空间在实 n 维空间中。四种基本计算各用独立例题。
+
+### 10.1 计算列空间 C(A)
+
+**适用**　求输出方向构成的空间及其维数。
+
+**步骤**　消元记录主元列号；取原矩阵对应列；维数等于秩。
+
+**例题**　
+$$
+A=\begin{bmatrix}1&1&2\\0&1&1\\1&2&3\\2&1&3\end{bmatrix}\longrightarrow R=\begin{bmatrix}1&0&1\\0&1&1\\0&0&0\\0&0&0\end{bmatrix}.
+$$
+第 1、2 列为主元列，所以
+$$
+\mathcal B_{C(A)}=\left\{\begin{bmatrix}1\\0\\1\\2\end{bmatrix},\;\begin{bmatrix}1\\1\\2\\1\end{bmatrix}\right\},\quad \dim C(A)=2.
+$$
+这些基向量有四个分量，因此 $C(A)\subseteq\mathbb R^4$；第三列为前两列之和。
+
+**验算**　两列独立并生成全部三列；$r=2$。
+
+**易错**　不要把列数 3 当作列空间所在空间的维数；每列的分量数才决定所在空间。
+
+### 10.2 计算行空间 C(A 的转置)
+
+**适用**　求所有行向量生成的空间。
+
+**步骤**　对 $A$ 行化简；取行最简形的所有非零行；若统一写列向量，就把这些行转置。
+
+**例题**　
+$$
+A=\begin{bmatrix}1&2&1&0\\0&1&1&1\\1&3&2&1\end{bmatrix}\longrightarrow R=\begin{bmatrix}1&0&-1&-2\\0&1&1&1\\0&0&0&0\end{bmatrix}.
+$$
+
+$$
+\mathcal B_{C(A^T)}=\left\{\begin{bmatrix}1\\0\\-1\\-2\end{bmatrix},\;\begin{bmatrix}0\\1\\1\\1\end{bmatrix}\right\},\quad \dim C(A^T)=2.
+$$
+每个基向量有四个分量，因此行空间在 $\mathbb R^4$ 中。行变换只做可逆行组合，行空间保持不变。
+
+**验算**　原第一行等于 $R$ 的第一行加两倍第二行；原第二行就是 $R$ 的第二行；第三行是原前两行之和。
+
+**易错**　行空间可以取 $R$ 的非零行；这条规则不能套用到列空间。
+
+### 10.3 计算零空间 N(A)
+
+**适用**　求所有使 $Ax=0$ 的输入向量。
+
+**步骤**　求 $R$；为每个自由变量构造一个特殊解；特殊解组成零空间基，维数为 $n-r$。
+
+**例题**　
+$$
+A=\begin{bmatrix}1&-1&2&0\\0&1&1&2\\1&0&3&2\end{bmatrix}\longrightarrow R=\begin{bmatrix}1&0&3&2\\0&1&1&2\\0&0&0&0\end{bmatrix}.
+$$
+由 $x_1+3x_3+2x_4=0$、$x_2+x_3+2x_4=0$ 得
+$$
+\mathcal B_{N(A)}=\left\{\begin{bmatrix}-3\\-1\\1\\0\end{bmatrix},\;\begin{bmatrix}-2\\-2\\0\\1\end{bmatrix}\right\},\quad \dim N(A)=4-2=2.
+$$
+零空间在 $\mathbb R^4$ 中，因为输入有四个分量。
+
+**验算**　两个基向量分别满足 $Av=0$；自由分量分别是 $(1,0)$ 与 $(0,1)$。
+
+**易错**　$N(A)$ 中向量的分量数是列数；不是零行的数量。
+
+### 10.4 转置后求左零空间 N(A 的转置)
+
+**适用**　求所有满足 $y^TA=0$ 的行关系，统一把 $y$ 写成列向量。
+
+**步骤**　先转置；对 $A^Ty=0$ 构造特殊解；所得基向量位于 $\mathbb R^m$，维数为 $m-r$。
+
+**例题**　
+$$
+A=\begin{bmatrix}1&0&1\\0&1&2\\1&1&3\\2&-1&0\end{bmatrix},\quad \operatorname{rref}(A^T)=\begin{bmatrix}1&0&1&2\\0&1&1&-1\\0&0&0&0\end{bmatrix}.
+$$
+自由变量是 $y_3,y_4$。分别取 $(1,0)$、$(0,1)$：
+$$
+\mathcal B_{N(A^T)}=\left\{\begin{bmatrix}-1\\-1\\1\\0\end{bmatrix},\;\begin{bmatrix}-2\\1\\0\\1\end{bmatrix}\right\},\quad \dim N(A^T)=4-2=2.
+$$
+第一个基向量表示原矩阵第 3 行等于前两行之和；第二个表示第 4 行等于第 1 行的两倍减第 2 行。
+
+**验算**　分别计算 $A^Ty=0$，等价地验证各行的加权和为零。
+
+**易错**　左零空间不是 $N(A)$；应先转置，未知量个数随之变为行数。
+
+### 10.5 累计行变换直接提取左零空间
+
+**适用**　已经对 $A$ 消元，希望同时记录零行来自哪些原始行。
+
+**步骤**　对 $[A\mid I_m]$ 同步做行变换，得到 $[R\mid E]$；$R$ 中每个零行对应的 $E$ 行转置后，就是左零空间基。
+
+**例题**　
+$$
+A=\begin{bmatrix}1&1&0\\0&1&2\\1&3&4\end{bmatrix}.
+$$
+做 $R_3\leftarrow R_3-R_1$、$R_3\leftarrow R_3-2R_2$，最后做 $R_1\leftarrow R_1-R_2$：
+$$
+[A\mid I]\longrightarrow[R\mid E]=\begin{bmatrix}1&0&-2&1&-1&0\\0&1&2&0&1&0\\0&0&0&-1&-2&1\end{bmatrix}.
+$$
+第三行左侧为零，取右侧第三行的转置：
+$$
+y=\begin{bmatrix}-1\\-2\\1\end{bmatrix},\quad N(A^T)=\operatorname{span}\left\{\begin{bmatrix}-1\\-2\\1\end{bmatrix}\right\}.
+$$
+本题 $m=n=3,r=2$，四个空间的维数依次为 $2,2,1,1$。
+
+**验算**　$EA=R$，且 $y^TA=0$；右侧来自可逆行操作，取出的零行关系相互独立。
+
+**易错**　只有把整个行变换同步作用于单位矩阵，右侧才能正确记录系数。
+
+## Lecture 11：把矩阵视为向量：矩阵子空间
+
+本讲仅保留矩阵子空间的基与维数。这里的“向量”是整个矩阵，线性组合仍按对应元素进行。
+
+### 11.1 参数化矩阵子空间并提取基
+
+**适用**　矩阵集合的各元素满足线性约束，或整个矩阵由若干参数描述。
+
+**步骤**　先用互相独立的参数表示所有元素；对每个参数提取一个系数矩阵；检查系数矩阵独立，数量就是维数。
+
+**例题**　求以下矩阵空间的基和维数：
+$$
+S=\left\{\begin{bmatrix}a&b&c\\b&a&0\\c&0&a\end{bmatrix}:a,b,c\in\mathbb R\right\}.
+$$
+逐参数拆开：
+$$
+X=a\begin{bmatrix}1&0&0\\0&1&0\\0&0&1\end{bmatrix}+b\begin{bmatrix}0&1&0\\1&0&0\\0&0&0\end{bmatrix}+c\begin{bmatrix}0&0&1\\0&0&0\\1&0&0\end{bmatrix}.
+$$
+三块矩阵都属于 $S$，并生成任意 $X$。若 $\alpha B_1+\beta B_2+\gamma B_3=0$，依次看 $(1,1),(1,2),(1,3)$ 元，得到 $\alpha=\beta=\gamma=0$。因此 $\{B_1,B_2,B_3\}$ 是基，$\dim S=3$。
+
+一般情况下，也可按固定顺序把每个 $3\times3$ 矩阵展开为九维列向量，然后用消元判断这些矩阵是否独立。
+
+**验算**　将任意参数代入拆分式可恢复原矩阵；三块系数矩阵没有非平凡零组合。
+
+**易错**　这里求的是矩阵空间的维数，不是某一个 $3\times3$ 矩阵的秩；两者不能混同。
+
+## Lecture 14：正交向量与正交子空间
+
+从本讲继续使用 MIT 原讲次编号。正交计算的核心是内积为零；子空间问题只需检查一组生成向量。
+
+### 14.1 用内积判断向量是否正交
+
+**适用**　判断实向量之间是否垂直。
+
+**步骤**　对应分量相乘再求和；内积为零则正交，长度不必为 1。
+
+**例题**　
+$$
+u=\begin{bmatrix}1\\2\\-1\end{bmatrix},\quad v=\begin{bmatrix}2\\-1\\0\end{bmatrix},\quad w=\begin{bmatrix}1\\0\\1\end{bmatrix}.
+$$
+
+$$
+\begin{aligned}
+u^Tv=1\times2+2\times(-1)+(-1)\times0=0, \\u^Tw=1\times1+2\times0+(-1)\times1=0, \\v^Tw=2\times1+(-1)\times0+0\times1=2.
+\end{aligned}
+$$
+所以 $u\perp v$、$u\perp w$，但 $v,w$ 不正交。
+
+**验算**　内积对调次序不变；$u^Tu=6$，因此 $u$ 不是单位向量。
+
+**易错**　与同一个向量正交的两个向量，不一定彼此正交。
+
+### 14.2 用生成矩阵判断两个子空间正交
+
+**适用**　两个子空间各有一组生成向量；这些向量不必本身都是基。
+
+**步骤**　把生成向量分别排成列矩阵 $A,B$；计算 $A^TB$；整个乘积为零才表示每对方向都正交。
+
+**例题**　令 $U=C(A),V=C(B)$，其中
+$$
+A=\begin{bmatrix}1&0&1\\0&1&1\\1&0&1\\0&1&1\end{bmatrix},\quad B=\begin{bmatrix}1&0&1\\0&1&1\\-1&0&-1\\0&-1&-1\end{bmatrix}.
+$$
+
+$$
+A^TB=\begin{bmatrix}0&0&0\\0&0&0\\0&0&0\end{bmatrix}.
+$$
+因此 $U\perp V$。本题两矩阵都秩为 2，且 $2+2=4$，所以进一步得到 $V=U^\perp$。
+
+**验算**　任取 $u=A\alpha,v=B\beta$，都有 $u^Tv=\alpha^TA^TB\beta=0$。
+
+**易错**　只检验一对向量不够；要断言互为正交补，还需维数相加等于环境维数。
+
+### 14.3 把求正交补转化为求零空间
+
+**适用**　已知子空间由若干向量生成，要找与其中所有向量都正交的方向。
+
+**步骤**　把生成向量放成列矩阵 $A$；解 $A^Ty=0$，即 $C(A)^\perp=N(A^T)$。
+
+**例题**　设 $S=C(A)$，其中
+$$
+A=\begin{bmatrix}1&0&1\\1&1&2\\0&1&1\\1&-1&0\end{bmatrix}.
+$$
+
+$$
+\operatorname{rref}(A^T)=\begin{bmatrix}1&0&-1&2\\0&1&1&-1\\0&0&0&0\end{bmatrix}.
+$$
+令自由变量 $y_3=s,y_4=t$，得
+$$
+y=s\begin{bmatrix}1\\-1\\1\\0\end{bmatrix}+t\begin{bmatrix}-2\\1\\0\\1\end{bmatrix}.
+$$
+所以两参数向量构成 $S^\perp$ 的基，$\dim S^\perp=4-2=2$。
+
+**验算**　两基向量与 $A$ 的每一列内积均为零；维数之和为 4。
+
+**易错**　与列空间正交用 $A^T$；若求行空间的正交补，应解 $Ax=0$。
+
+### 14.4 验证四个子空间的正交关系并判断可解性
+
+**适用**　需要联系行空间、列空间和两个零空间，或检查 $Ax=b$ 是否相容。
+
+**步骤**　行空间的基与零空间基逐对内积；列空间基与左零空间基逐对内积。可解性要求 $b$ 与整个左零空间正交。
+
+**例题**　
+$$
+A=\begin{bmatrix}1&0&2\\0&1&1\\1&1&3\end{bmatrix}.
+$$
+
+$$
+\mathcal B_{C(A^T)}=\left\{\begin{bmatrix}1\\0\\2\end{bmatrix},\;\begin{bmatrix}0\\1\\1\end{bmatrix}\right\},\quad \mathcal B_{N(A)}=\left\{\begin{bmatrix}-2\\-1\\1\end{bmatrix}\right\}.
+$$
+零空间基与两行空间基的内积分别为 $-2+2=0$、$-1+1=0$，所以 $C(A^T)^\perp=N(A)$。再看
+$$
+\mathcal B_{C(A)}=\left\{\begin{bmatrix}1\\0\\1\end{bmatrix},\;\begin{bmatrix}0\\1\\1\end{bmatrix}\right\},\quad \mathcal B_{N(A^T)}=\left\{\begin{bmatrix}-1\\-1\\1\end{bmatrix}\right\}.
+$$
+左零空间基 $y=(-1,-1,1)^T$ 与两个列空间基内积都为零，且两个空间的维数为 $2$ 和 $1$，因此 $C(A)^\perp=N(A^T)$。
+
+对 $b=(2,1,3)^T$，$y^Tb=-2-1+3=0$，所以有解，例如 $x=(2,1,0)^T$；对 $c=(2,1,4)^T$，$y^Tc=1\ne0$，所以无解。
+
+**验算**　两对空间的维数都加起来等于 3；直接检查 $Ax=b$。
+
+**易错**　左零空间维数大于 1 时，必须与其所有基向量正交，不能只查一个。
+
+## Lecture 15：投影到子空间
+
+投影寻找子空间中离给定向量最近的点。计算完成后，最重要的检查是误差与目标子空间正交。
+
+### 15.1 投影到一条直线
+
+**适用**　目标直线经过原点，方向向量 $a\ne0$。
+
+**步骤**　先求投影系数 $\hat x=(a^Tb)/(a^Ta)$；再求 $p=a\hat x$；最后求误差 $e=b-p$。
+
+**例题**　
+$$
+a=\begin{bmatrix}1\\2\\2\end{bmatrix},\quad b=\begin{bmatrix}3\\0\\3\end{bmatrix}.
+$$
+
+$$
+\begin{aligned}
+\hat x=\frac{a^Tb}{a^Ta}=\frac{3+0+6}{1+4+4}=1, \\p=a\hat x=\begin{bmatrix}1\\2\\2\end{bmatrix},\quad e=b-p=\begin{bmatrix}2\\-2\\1\end{bmatrix}.
+\end{aligned}
+$$
+系数 $\hat x$ 是标量，投影 $p$ 与误差 $e$ 都是三维向量。
+
+**验算**　$a^Te=2-4+2=0$。任意直线上点 $ta$ 满足 $\|b-ta\|^2=\|e\|^2+\|p-ta\|^2$，故 $p$ 最近。
+
+**易错**　分母是 $a^Ta$，不是 $\|a\|$；目标直线若不经过原点，应先平移。
+
+### 15.2 投影到具有正交基的子空间
+
+**适用**　已知子空间的一组非零正交基；这些向量未必单位化。
+
+**步骤**　分别求每个基方向上的投影，再相加：$p=\sum_i u_i(u_i^Tb)/(u_i^Tu_i)$。
+
+**例题**　设 $S=C(A)$，其中
+$$
+A=\begin{bmatrix}1&1&2\\1&-1&0\\0&2&2\end{bmatrix},\quad b=\begin{bmatrix}2\\0\\3\end{bmatrix}.
+$$
+第三列是前两列之和，前两列 $u=(1,1,0)^T$、$v=(1,-1,2)^T$ 是一组正交基，因为 $u^Tv=0$。分别计算
+$$
+\frac{u^Tb}{u^Tu}=\frac22=1,\qquad \frac{v^Tb}{v^Tv}=\frac86=\frac43.
+$$
+
+$$
+p=u+\frac43v=\begin{bmatrix}\frac{7}{3}\\- \frac{1}{3}\\\frac{8}{3}\end{bmatrix},\quad e=b-p=\begin{bmatrix}- \frac{1}{3}\\\frac{1}{3}\\\frac{1}{3}\end{bmatrix}.
+$$
+
+
+**验算**　$u^Te=0$、$v^Te=0$，所以误差与整个 $S$ 正交。
+
+**易错**　只能对一组正交基直接分方向相加；不能把生成矩阵中相关的第三列也再投影一次。
+
+### 15.3 通过正规方程投影到一般列空间
+
+**适用**　目标空间由满列秩矩阵 $A$ 的列生成，列向量不必正交。
+
+**步骤**　令 $p=A\hat x$；由误差正交 $A^T(b-A\hat x)=0$ 建立正规方程；解系数后回乘 $A$。
+
+**例题**　
+$$
+A=\begin{bmatrix}1&0&0\\0&1&0\\0&0&1\\1&1&1\end{bmatrix},\quad b=\begin{bmatrix}1\\2\\3\\2\end{bmatrix}.
+$$
+前面三行已保证三列独立。计算
+$$
+A^TA=\begin{bmatrix}2&1&1\\1&2&1\\1&1&2\end{bmatrix},\quad A^Tb=\begin{bmatrix}3\\4\\5\end{bmatrix}.
+$$
+正规方程为 $2\hat x_1+\hat x_2+\hat x_3=3$、$\hat x_1+2\hat x_2+\hat x_3=4$、$\hat x_1+\hat x_2+2\hat x_3=5$。令 $q=\hat x_1+\hat x_2+\hat x_3$，有 $\hat x_1+q=3$、$\hat x_2+q=4$、$\hat x_3+q=5$；相加得到 $4q=12$。于是
+$$
+\hat x=\begin{bmatrix}0\\1\\2\end{bmatrix},\quad p=A\hat x=\begin{bmatrix}0\\1\\2\\3\end{bmatrix},\quad e=b-p=\begin{bmatrix}1\\1\\1\\-1\end{bmatrix}.
+$$
+本例 $\hat x\in\mathbb R^3$，而 $p,e\in\mathbb R^4$，两种对象的维数不同。
+
+**验算**　$A^Te=0$；误差不为零，说明 $b$ 不在列空间。$A^TA$ 可逆来自列满秩。
+
+**易错**　不要把正规方程写成 $AA^T\hat x=Ab$；实际计算优先解方程，不必显式求逆。
+
+## Lecture 16：投影矩阵与最小二乘
+
+本讲将投影写成矩阵，并用正规方程计算最小二乘解及直线拟合。
+
+### 16.1 计算向一条直线投影的矩阵
+
+**适用**　目标直线是 $\operatorname{span}\{a\}$，其中 $a\ne0$。
+
+**步骤**　先计算外积 $aa^T$ 和标量 $a^Ta$；求 $P=aa^T/(a^Ta)$；最后用 $p=Pb$ 得到投影。
+
+**例题**　
+$$
+a=\begin{bmatrix}1\\2\\1\end{bmatrix},\quad b=\begin{bmatrix}2\\1\\3\end{bmatrix}.
+$$
+计算 $a^Ta=6$，因此
+$$
+P=\begin{bmatrix}\frac{1}{6}&\frac{1}{3}&\frac{1}{6}\\\frac{1}{3}&\frac{2}{3}&\frac{1}{3}\\\frac{1}{6}&\frac{1}{3}&\frac{1}{6}\end{bmatrix},\qquad p=Pb=\begin{bmatrix}\frac{7}{6}\\\frac{7}{3}\\\frac{7}{6}\end{bmatrix},\quad e=b-p=\begin{bmatrix}\frac{5}{6}\\- \frac{4}{3}\\\frac{11}{6}\end{bmatrix}.
+$$
+此处 $aa^T$ 是 $3\times3$ 矩阵，而 $a^Ta$ 是标量。
+
+**验算**　直接相乘有 $P^2=P$、$P^T=P$；且 $a^Te=0$。
+
+**易错**　不要把外积 $aa^T$ 与内积 $a^Ta$ 混淆；分母要求 $a\ne0$。
+
+### 16.2 计算向列空间投影的矩阵
+
+**适用**　$A$ 的列线性无关，需要把 $b$ 投影到 $C(A)$。
+
+**步骤**　计算 $A^TA$；求 $P=A(A^TA)^{-1}A^T$；计算 $p=Pb$、$e=b-p$。
+
+**例题**　
+$$
+A=\begin{bmatrix}1&0&0\\0&1&0\\0&0&1\\1&2&0\end{bmatrix},\quad b=\begin{bmatrix}1\\2\\3\\4\end{bmatrix}.
+$$
+前 3 行为单位矩阵，因此 $A$ 列满秩。计算
+$$
+A^TA=\begin{bmatrix}2&2&0\\2&5&0\\0&0&1\end{bmatrix},\qquad (A^TA)^{-1}=\begin{bmatrix}\frac{5}{6}&- \frac{1}{3}&0\\- \frac{1}{3}&\frac{1}{3}&0\\0&0&1\end{bmatrix}.
+$$
+
+$$
+P=\begin{bmatrix}\frac{5}{6}&- \frac{1}{3}&0&\frac{1}{6}\\- \frac{1}{3}&\frac{1}{3}&0&\frac{1}{3}\\0&0&1&0\\\frac{1}{6}&\frac{1}{3}&0&\frac{5}{6}\end{bmatrix}.
+$$
+因为 $A$ 是 $4\times3$，$P$ 是 $4\times4$。再计算
+$$
+p=Pb=\begin{bmatrix}\frac{5}{6}\\\frac{5}{3}\\3\\\frac{25}{6}\end{bmatrix},\qquad e=b-p=\begin{bmatrix}\frac{1}{6}\\\frac{1}{3}\\0\\- \frac{1}{6}\end{bmatrix}.
+$$
+
+
+**验算**　$P^T=P$、$P^2=P$；代入计算得 $A^Te=0$。
+
+**易错**　必须先确认列满秩；否则 $A^TA$ 不可逆，不能直接套用这个逆矩阵公式。
+
+### 16.3 计算向正交补的投影
+
+**适用**　已知向子空间 $S$ 正交投影的矩阵 $P$，要求向 $S^\perp$ 的投影。
+
+**步骤**　计算 $Q=I-P$；再求 $p=Pb$、$e=Qb$；检查 $b=p+e$。
+
+**例题**　
+$$
+P=\begin{bmatrix}\frac{2}{3}&\frac{1}{3}&- \frac{1}{3}\\\frac{1}{3}&\frac{2}{3}&\frac{1}{3}\\- \frac{1}{3}&\frac{1}{3}&\frac{2}{3}\end{bmatrix},\quad b=\begin{bmatrix}3\\0\\0\end{bmatrix}.
+$$
+因此
+$$
+Q=I-P=\begin{bmatrix}\frac{1}{3}&- \frac{1}{3}&\frac{1}{3}\\- \frac{1}{3}&\frac{1}{3}&- \frac{1}{3}\\\frac{1}{3}&- \frac{1}{3}&\frac{1}{3}\end{bmatrix},\quad p=Pb=\begin{bmatrix}2\\1\\-1\end{bmatrix},\quad e=Qb=\begin{bmatrix}1\\-1\\1\end{bmatrix}.
+$$
+例如取 $A=\begin{bmatrix}1&0&1\\1&1&2\\0&1&1\end{bmatrix}$，其列空间恰为 $S$，而 $S^\perp=\operatorname{span}\{(1,-1,1)^T\}$。
+
+**验算**　$p+e=b$，$Pe=0$、$Qp=0$，且 $p^Te=0$；$Q^2=Q$。
+
+**易错**　$I-P$ 投影到正交补，不是一般意义上的矩阵逆；投影矩阵通常不可逆。
+
+### 16.4 求不相容方程组的最小二乘解
+
+**适用**　$Ax=b$ 无解，需要使 $\|Ax-b\|^2$ 最小；本题 $A$ 列满秩。
+
+**步骤**　求 $A^TA$ 与 $A^Tb$；解正规方程得到 $\hat x$；计算 $p=A\hat x$、$e=b-p$ 及 $\|e\|^2$。
+
+**例题**　
+$$
+A=\begin{bmatrix}1&0&0\\0&1&0\\0&0&1\\1&-1&1\end{bmatrix},\quad b=\begin{bmatrix}2\\0\\1\\2\end{bmatrix}.
+$$
+原方程前三行要求 $x=(2,0,1)^T$，但第四行左端为 $3\ne2$，所以无解。
+$$
+A^TA=\begin{bmatrix}2&-1&1\\-1&2&-1\\1&-1&2\end{bmatrix},\quad A^Tb=\begin{bmatrix}4\\-2\\3\end{bmatrix}.
+$$
+对增广矩阵 $[A^TA\mid A^Tb]$ 做 $R_2\leftarrow R_2+\frac12R_1$、$R_3\leftarrow R_3-\frac12R_1$，再做 $R_3\leftarrow R_3+\frac13R_2$，可自下而上回代得到
+$$
+\hat x=\begin{bmatrix}\frac{7}{4}\\\frac{1}{4}\\\frac{3}{4}\end{bmatrix},\quad p=A\hat x=\begin{bmatrix}\frac{7}{4}\\\frac{1}{4}\\\frac{3}{4}\\\frac{9}{4}\end{bmatrix},\quad e=b-p=\begin{bmatrix}\frac{1}{4}\\- \frac{1}{4}\\\frac{1}{4}\\- \frac{1}{4}\end{bmatrix}.
+$$
+
+$$
+\|e\|^2=\frac{1}{4}.
+$$
+
+
+**验算**　$A^Te=0$；对任意 $x$，$\|b-Ax\|^2=\|e\|^2+\|A(\hat x-x)\|^2$，所以所得值最小。
+
+**易错**　$\hat x$ 是系数向量，不是投影 $p$；不要把正规方程的右端写成 $b$。
+
+### 16.5 用最小二乘拟合直线
+
+**适用**　给定数据 $(t_i,y_i)$，拟合直线 $y=C+Dt$，使纵向残差平方和最小。
+
+**步骤**　把数据写成 $A(C,D)^T\approx b$；解 $A^TA(C,D)^T=A^Tb$；计算拟合值和残差。
+
+**例题**　对数据点 $(0,1),(1,2),(2,2),(3,4)$，有
+$$
+A=\begin{bmatrix}1&0\\1&1\\1&2\\1&3\end{bmatrix},\quad b=\begin{bmatrix}1\\2\\2\\4\end{bmatrix},\quad A^TA=\begin{bmatrix}4&6\\6&14\end{bmatrix},\quad A^Tb=\begin{bmatrix}9\\18\end{bmatrix}.
+$$
+正规方程是 $4C+6D=9$、$6C+14D=18$；消去 $C$ 得 $5D=\frac92$，回代得到
+$$
+\begin{bmatrix}C\\D\end{bmatrix}=\begin{bmatrix}\frac{9}{10}\\\frac{9}{10}\end{bmatrix},\qquad \hat y=C+Dt=\frac{9}{10}+\frac{9}{10}t.
+$$
+
+$$
+p=A\hat x=\begin{bmatrix}\frac{9}{10}\\\frac{9}{5}\\\frac{27}{10}\\\frac{18}{5}\end{bmatrix},\quad e=b-p=\begin{bmatrix}\frac{1}{10}\\\frac{1}{5}\\- \frac{7}{10}\\\frac{2}{5}\end{bmatrix},\quad \|e\|^2=\frac{7}{10}.
+$$
+每个残差是观测值减对应的拟合值。设计矩阵的两列分别对应截距和斜率。
+
+**验算**　$\sum_i e_i=0$、$\sum_i t_i e_i=0$，即 $A^Te=0$。
+
+**易错**　这里最小化纵向残差，而不是点到直线的垂直距离；只有模型含截距时才能据此保证残差之和为零。
+
+### 16.6 从正交条件判断候选最小二乘解
+
+**适用**　给定一个候选向量，判断它是否使 $\|Ax-b\|^2$ 最小。
+
+**步骤**　先算残差 $e_0=b-Ax_0$；再算 $A^Te_0$。结果为零当且仅当候选解为最小二乘解。
+
+**例题**　
+$$
+A=\begin{bmatrix}1&0&1\\0&1&0\\1&0&0\\0&1&1\end{bmatrix},\quad b=\begin{bmatrix}2\\1\\0\\4\end{bmatrix},\quad x_0=\begin{bmatrix}1\\1\\0\end{bmatrix}.
+$$
+
+$$
+e_0=b-Ax_0=\begin{bmatrix}1\\0\\-1\\3\end{bmatrix},\qquad A^Te_0=\begin{bmatrix}0\\3\\4\end{bmatrix}\ne0.
+$$
+所以 $x_0$ 不是最小二乘解。解正规方程得到
+$$
+\hat x=\begin{bmatrix}- \frac{1}{4}\\\frac{5}{4}\\\frac{5}{2}\end{bmatrix},\quad e=b-A\hat x=\begin{bmatrix}- \frac{1}{4}\\- \frac{1}{4}\\\frac{1}{4}\\\frac{1}{4}\end{bmatrix}.
+$$
+
+
+**验算**　$A^Te=0$，故 $\hat x$ 最优；本题 $A$ 列满秩，所以最优系数唯一。由于 $e\ne0$，原方程组无精确解。
+
+**易错**　最小二乘解的残差未必为零；必须区分 $A^Te=0$ 与 $e=0$。
+
+## Lecture 17：正交矩阵与 Gram-Schmidt 正交化
+
+Lecture 16 从一般列空间求投影。本讲先用标准正交列简化计算，再把线性无关的列改造成张成同一空间的标准正交列，并写成 $A=QR$。
+
+### 17.1 判断正交矩阵并用转置求逆
+
+**适用**　给定实方阵 $Q$，要判断它是否为正交矩阵，并在满足条件时求逆。
+
+**步骤**　计算 $Q^TQ$。其对角元为各列的长度平方，其余元素为不同列的内积。若 $Q^TQ=I$，各列两两正交且长度为 $1$，直接取 $Q^{-1}=Q^T$。
+
+**例题**　判断下列矩阵是否正交，并求逆。
+$$
+Q=\frac13\begin{bmatrix}1&2&2\\2&1&-2\\-2&2&-1\end{bmatrix}.
+$$
+
+各列去掉公因子 $\frac13$ 后的长度平方均为 $9$。三组列内积去掉公因子 $\frac19$ 后依次为 $2+2-4=0$、$2-4+2=0$、$4-2-2=0$。所以 $Q^TQ=I_3$，且
+$$
+Q^{-1}=Q^T=\frac13\begin{bmatrix}1&2&-2\\2&1&2\\2&-2&-1\end{bmatrix}.
+$$
+
+**验算**　将所得逆矩阵乘回，得到 $QQ^T=\frac19\operatorname{diag}(9,9,9)=I_3$。
+
+**易错**　判断时要同时检查对角元和非对角元。使用转置求逆时，先确认 $Q$ 为方阵。
+
+### 17.2 用标准正交基计算投影与投影系数
+
+**适用**　$Q$ 的列是目标子空间的一组标准正交基，需要求 $b$ 在 $C(Q)$ 上的投影及其基坐标。
+
+**步骤**　将 Lecture 16 的正规方程写成 $Q^TQ\hat x=Q^Tb$。代入 $Q^TQ=I$，得到 $\hat x=Q^Tb$。取 $P=QQ^T$，求 $p=Pb=Q\hat x$ 和 $e=b-p$。
+
+**例题**　计算下列 $b$ 在 $C(Q)$ 上的投影。
+$$
+Q=\frac12\begin{bmatrix}1&1&1\\1&1&-1\\1&-1&1\\1&-1&-1\end{bmatrix},
+\qquad b=\begin{bmatrix}3\\0\\1\\2\end{bmatrix}.
+$$
+
+三列的长度平方均为 $1$，两两内积均为 $0$。按列与 $b$ 做内积，再计算投影矩阵，得到
+$$
+\hat x=\frac12\begin{bmatrix}6\\0\\2\end{bmatrix}
+=\begin{bmatrix}3\\0\\1\end{bmatrix},
+\qquad P=\frac14\begin{bmatrix}3&1&1&-1\\1&3&-1&1\\1&-1&3&1\\-1&1&1&3\end{bmatrix}.
+$$
+$$
+p=Pb=\begin{bmatrix}2\\1\\2\\1\end{bmatrix},
+\qquad e=b-p=\begin{bmatrix}1\\-1\\-1\\1\end{bmatrix}.
+$$
+
+**验算**　回乘得 $Q\hat x=p$，且 $Q^Te=\frac12(0,0,0)^T=0$。
+
+**易错**　本题 $Q^TQ$ 是 $3\times3$ 的单位矩阵，$QQ^T$ 是 $4\times4$ 的投影矩阵。$\hat x$ 有三个坐标，$p$ 有四个分量。
+
+### 17.3 用 Gram-Schmidt 求标准正交基
+
+**适用**　给定线性无关的列向量 $a_1,\ldots,a_n$，需要求它们所张成空间的一组标准正交基。
+
+**步骤**　取 $u_1=a_1$。对每个后续的 $a_j$，沿用 Lecture 15 的正交投影，减去它在此前各 $u_i$ 方向上的投影。最后将每个 $u_j$ 单位化。
+$$
+u_j=a_j-\sum_{i<j}\frac{u_i^Ta_j}{u_i^Tu_i}\,u_i,
+\qquad q_j=\frac{u_j}{\|u_j\|}.
+$$
+
+**例题**　用下列矩阵的三列构造 $C(A)$ 的标准正交基。
+$$
+A=[a_1\ a_2\ a_3]=\begin{bmatrix}1&2&3\\1&0&-1\\0&1&-1\end{bmatrix}.
+$$
+
+逐列计算得到
+$$
+\begin{aligned}
+u_1&=a_1=(1,1,0)^T,\\
+u_2&=a_2-\frac{2}{2}u_1=(1,-1,1)^T,\\
+u_3&=a_3-\frac{2}{2}u_1-\frac{3}{3}u_2=(1,-1,-2)^T.
+\end{aligned}
+$$
+
+三个非零向量的长度依次为 $\sqrt2$、$\sqrt3$、$\sqrt6$，所以取
+$$
+q_1=\frac{u_1}{\sqrt2},\qquad q_2=\frac{u_2}{\sqrt3},\qquad
+q_3=\frac{u_3}{\sqrt6}.
+$$
+
+**验算**　三个 $u_i$ 的两两内积均为 $0$，单位化后得到 $Q^TQ=I_3$。每个 $u_i$ 由原列组合得到，且 $a_1=u_1$、$a_2=u_1+u_2$、$a_3=u_1+u_2+u_3$，故 $C(Q)=C(A)$。
+
+**易错**　第三列要减去前两个正交方向上的投影。使用未单位化的 $u_i$ 时，投影系数的分母为 $u_i^Tu_i$。
+
+### 17.4 计算薄 QR 分解
+
+**适用**　$A$ 是列满秩的 $m\times n$ 矩阵。薄 QR 分解给出具有标准正交列的 $m\times n$ 矩阵 $Q$，以及 $n\times n$ 的上三角因子 $R$。
+
+**步骤**　按 17.3 构造 $Q$，再算 $R=Q^TA$，其中 $r_{ij}=q_i^Ta_j$。第 $j$ 个原列 $a_j$ 是 $q_1,\ldots,q_j$ 的线性组合，所以 $i>j$ 时 $q_i^Ta_j=0$。
+
+**例题**　对下列 $4\times3$ 矩阵求薄 QR 分解。
+$$
+A=\begin{bmatrix}1&1&3\\0&1&-1\\1&1&1\\0&1&-1\end{bmatrix}.
+$$
+
+取 $u_1=a_1=(1,0,1,0)^T$。第二列沿 $u_1$ 的投影系数为 $1$。第三列沿 $u_1$、$u_2$ 的投影系数分别为 $2$、$-1$，因此
+$$
+\begin{aligned}
+u_2&=a_2-u_1=(0,1,0,1)^T,\\
+u_3&=a_3-2u_1+u_2=(1,0,-1,0)^T.
+\end{aligned}
+$$
+
+三个 $u_i$ 的长度均为 $\sqrt2$。单位化后用 $Q^T$ 乘 $A$，例如 $r_{23}=q_2^Ta_3=-2/\sqrt2=-\sqrt2$，得到
+$$
+Q=\frac1{\sqrt2}\begin{bmatrix}1&0&1\\0&1&0\\1&0&-1\\0&1&0\end{bmatrix},
+\qquad R=Q^TA=\sqrt2\begin{bmatrix}1&1&2\\0&1&-1\\0&0&1\end{bmatrix}.
+$$
+
+**验算**　$Q^TQ=I_3$，$R$ 的主对角线下方各元素均为 $0$。$QR$ 的三列依次是 $u_1$、$u_1+u_2$、$2u_1-u_2+u_3$，逐列与 $A$ 相同。
+
+**易错**　$R$ 的第 $j$ 列记录 $a_j$ 在标准正交基下的系数。薄分解中的 $Q$ 保留 $n$ 列，$R$ 保留 $n$ 行。
