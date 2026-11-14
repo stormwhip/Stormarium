@@ -10,6 +10,7 @@ on:
       - '工具/**'
       - '服务/**'
       - '.github/workflows/publish.yml'
+      - '.github/deploy/pack.py'
   workflow_dispatch:
 
 permissions:
@@ -57,8 +58,7 @@ jobs:
           mv 网站 "$payload/site"
           mkdir "$payload/service"
           cp -a 服务/*.py 服务/prompts 服务/templates 服务/requirements.txt "$payload/service/"
-          printf '%s\n' "$GITHUB_SHA" > "$payload/site/stormarium-version.txt"
-          tar -C "$payload" -czf stormarium.tar.gz site service
+          python3 .github/deploy/pack.py "$GITHUB_SHA" "$payload/site" "$payload/service" release
       - name: 在 GitHub 发布
         env:
           GH_TOKEN: ${{ github.token }}
@@ -66,9 +66,10 @@ jobs:
           set -euo pipefail
           tag="site-$GITHUB_SHA"
           if gh release view "$tag" >/dev/null 2>&1; then
-            gh release upload "$tag" stormarium.tar.gz --clobber
+            gh release upload "$tag" release/* --clobber
             gh release edit "$tag" --draft=false --latest
           else
-            gh release create "$tag" stormarium.tar.gz --target "$GITHUB_SHA" \
-              --title "网站发布 ${GITHUB_SHA:0:7}" --notes "Stormarium 网站发布包。" --latest
+            gh release create "$tag" release/* --target "$GITHUB_SHA" --draft \
+              --title "网站发布 ${GITHUB_SHA:0:7}" --notes "Stormarium 网站发布包。"
+            gh release edit "$tag" --draft=false --latest
           fi
