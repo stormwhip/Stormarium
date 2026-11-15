@@ -58,8 +58,11 @@ const NOTE_DIRNAME = 'notes';
 const SUBJECT_DIRNAME = 'subjects';
 const TOOL_DIRNAME = 'tools';
 const SUBJECT_SLUGS = { '语文': 'chinese', '数学': 'math', '英语': 'english', '物理': 'physics', '化学': 'chemistry', '生物': 'biology', '其他': 'other', '综合资料': 'resources' };
-const MIT1806_NOTE_NAME = 'MIT18.06线性代数计算笔记_Lecture1-17选编';
-const MIT1806_LEGACY_NAME = 'MIT18.06线性代数计算笔记_Lecture1-16选编';
+const MIT1806_NOTE_NAME = 'MIT18.06线性代数计算笔记_Lecture1-19选编';
+const MIT1806_LEGACY_NAMES = [
+  'MIT18.06线性代数计算笔记_Lecture1-16选编',
+  'MIT18.06线性代数计算笔记_Lecture1-17选编',
+];
 const NOTE_SLUGS = {
   '语文 I 戏剧部分复习作业': 'chinese1-drama-review',
   '无机化学实验教材': 'inorganic-lab', '预科二化学笔记': 'prep2-chemistry', '预科一化学笔记': 'prep1-chemistry',
@@ -2157,7 +2160,9 @@ ${n.html}
   const mit1806 = live.find((n) => n.subject === '数学' && n.noteName === MIT1806_NOTE_NAME);
   if (mit1806) {
     writeLegacyRedirect('notes/math/mit1806-lectures1-16.html', mit1806.diskPath);
-    writeLegacyRedirect(`笔记/数学/${MIT1806_LEGACY_NAME}.html`, mit1806.diskPath);
+    for (const name of MIT1806_LEGACY_NAMES) {
+      writeLegacyRedirect(`笔记/数学/${name}.html`, mit1806.diskPath);
+    }
   }
   ok(`${live.length} 个笔记页（输出在 网站\\${NOTE_DIRNAME}\\，保留旧地址跳转）`);
 
@@ -2319,8 +2324,10 @@ ${n.html}
     // 旧下载地址继续提供当前版，兼容已分享的链接和缓存中的旧网页。
     for (const extension of ['md', 'pdf', 'tex']) {
       const current = P(DIRS.out, OUT_FILE, `${MIT1806_NOTE_NAME}.${extension}`);
-      const previous = P(DIRS.out, OUT_FILE, `${MIT1806_LEGACY_NAME}.${extension}`);
-      if (fs.existsSync(current)) fs.copyFileSync(current, previous);
+      if (!fs.existsSync(current)) continue;
+      for (const name of MIT1806_LEGACY_NAMES) {
+        fs.copyFileSync(current, P(DIRS.out, OUT_FILE, `${name}.${extension}`));
+      }
     }
   }
   ok(`复制素材（图片 + 被引用的文件）${copied} 个`);
