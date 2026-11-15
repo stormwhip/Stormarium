@@ -1477,7 +1477,6 @@ $$
 
 **易错**　乘积公式针对 $AB$。计算 $\det(A+B)$ 时，应从和矩阵的元素出发。
 
-来源 [MIT OpenCourseWare · Lecture 18](https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/resources/lecture-18-properties-of-determinants/)
 
 ## Lecture 19：行列式公式与代数余子式
 
@@ -1556,5 +1555,3 @@ $$
 **验算**　对三阶矩阵按 Lecture 18 消元，无须换行，主元依次为 $2,3/2,4/3$，乘积为 $4$。
 
 **易错**　递推中的第二项含一对相邻的上、下对角元。二者相等时才可以写成同一个数的平方。
-
-来源 [MIT OpenCourseWare · Lecture 19](https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/resources/lecture-19-determinant-formulas-and-cofactors/)
