@@ -43,8 +43,38 @@
     }
   }
 
+  function initGithubDownloads() {
+    var links = document.querySelectorAll('.note-downloads a[data-github-download]');
+    Array.prototype.forEach.call(links, function (link) {
+      link.addEventListener('click', async function (event) {
+        if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+        if (!window.fetch || !window.URL || !window.URL.createObjectURL) return;
+        event.preventDefault();
+        if (link.getAttribute('data-downloading') === '1') return;
+        link.setAttribute('data-downloading', '1');
+        try {
+          var response = await fetch(link.href, { mode: 'cors', credentials: 'omit' });
+          if (!response.ok) throw new Error('GitHub HTTP ' + response.status);
+          var url = URL.createObjectURL(await response.blob());
+          var save = document.createElement('a');
+          save.href = url;
+          save.download = link.getAttribute('data-github-download');
+          document.body.appendChild(save);
+          save.click();
+          save.remove();
+          setTimeout(function () { URL.revokeObjectURL(url); }, 60000);
+        } catch (error) {
+          window.location.assign(link.href);
+        } finally {
+          link.removeAttribute('data-downloading');
+        }
+      });
+    });
+  }
+
   function init() {
     initToTop();
+    initGithubDownloads();
     /* ---- 0. Markdown / PDF 视图切换（只有两者都有才出现开关） ---- */
     /* PDF 视图由独立阅读器按需加载。 */
     var noteRoot = document.getElementById('note-root');

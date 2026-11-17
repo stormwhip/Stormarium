@@ -18,6 +18,11 @@ with tarfile.open(output / 'stormarium.tar.gz', 'w:gz', compresslevel=6) as bund
         if not p.is_file():
             continue
         name = p.relative_to(site).as_posix()
+        if name.startswith('assets/file/') and p.name.endswith('-源码与插图.zip'):
+            asset_name = 'source-' + hashlib.sha1(p.read_bytes()).hexdigest()[:24] + '.zip'
+            asset = output / asset_name
+            if not asset.exists():
+                shutil.copyfile(p, asset)
         if p.suffix.lower() in {'.html', '.js', '.css', '.xml', '.json', '.txt', '.md', '.tex', '.svg'} or p.stat().st_size < 128 * 1024:
             bundle.add(p, arcname='site/' + name)
             continue

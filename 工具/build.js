@@ -35,6 +35,25 @@ const searchIndex = require('./search-index');
 
 const ROOT = path.resolve(__dirname, '..');
 const P = (...parts) => path.join(...parts);
+const GITHUB_REPO = 'stormwhip/Stormarium';
+const GITHUB_REF = (() => {
+  const sha = String(process.env.GITHUB_SHA || '').trim();
+  if (/^[0-9a-f]{40}$/.test(sha)) return sha;
+  try {
+    const local = require('child_process').execFileSync('git', ['rev-parse', 'HEAD'], {
+      cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'],
+    }).trim();
+    if (/^[0-9a-f]{40}$/.test(local)) return local;
+  } catch (e) { /* Local source archive without Git metadata. */ }
+  return 'main';
+})();
+function githubSourceHref(abs) {
+  const rel = path.relative(ROOT, abs).split(path.sep).join('/');
+  if (!rel.startsWith('内容/') || rel.split('/').includes('..')) {
+    throw new Error('GitHub 下载文件路径无效：' + rel);
+  }
+  return 'https://raw.githubusercontent.com/' + GITHUB_REPO + '/' + GITHUB_REF + '/' + encodeSegs(rel);
+}
 
 const DIRS = {
   root: ROOT,
@@ -1447,7 +1466,7 @@ async function main() {
       if (!sitePath) return null;
       let size = 0;
       try { size = fs.statSync(hit.abs).size; } catch (e) { size = 0; }
-      return { href: n.root + sitePath, size, name: path.basename(hit.abs) };
+      return { href: n.root + sitePath, downloadHref: githubSourceHref(hit.abs), size, name: path.basename(hit.abs) };
     };
     const pdfHit = n.legacy
       ? findSideFileForNoteLegacy(n.rel, 'pdf')
@@ -1471,7 +1490,7 @@ async function main() {
       if (mdDisk) {
         let size = 0;
         try { size = fs.statSync(n.mdAbs).size; } catch (e) { size = 0; }
-        n.md = { href: n.root + encodeSegs(mdDisk), size, name: `${n.noteName}.md` };
+        n.md = { href: n.root + encodeSegs(mdDisk), downloadHref: githubSourceHref(n.mdAbs), size, name: path.basename(n.mdAbs) };
       }
     }
 
@@ -1539,7 +1558,14 @@ async function main() {
       const bundle = require('./source-bundle').createBundle(n.noteDir, n.mdAbs, texHit.abs);
       if (bundle) {
         const disk = uniqueOutPath(OUT_FILE, `${n.noteName}-源码与插图.zip`);
-        n.sourceBundle = { href: n.root + encodeSegs(disk), size: bundle.length, disk, data: bundle };
+        const assetName = 'source-' + sha1(bundle).slice(0, 24) + '.zip';
+        const releasePath = /^[0-9a-f]{40}$/.test(GITHUB_REF)
+          ? 'download/site-' + GITHUB_REF + '/' : 'latest/download/';
+        n.sourceBundle = {
+          href: n.root + encodeSegs(disk),
+          downloadHref: 'https://github.com/' + GITHUB_REPO + '/releases/' + releasePath + assetName,
+          size: bundle.length, disk, data: bundle,
+        };
       }
     }
 
@@ -2044,6 +2070,7 @@ async function main() {
     // 文件直链：配置了「文件CDN前缀」就走 CDN，否则用相对路径
     const fileHref = (item) => {
       if (!item) return '';
+      if (item.downloadHref) return item.downloadHref;
       if (!cfg.fileCdnPrefix) return item.href;
       // item.file 是 assets/file 下的原始文件名（含中文），CDN 上同样编码
       const name = item.file || path.basename(decodeURIComponent(item.href));
@@ -2051,7 +2078,9 @@ async function main() {
     };
     const fileBtn = (cls, ico, label, item, attr) => {
       if (!item) return '';
-      return `<a class="file-btn ${cls}" href="${escapeHtml(fileHref(item))}"${attr}>` +
+      const githubDownload = item.downloadHref && item.downloadHref.startsWith('https://raw.githubusercontent.com/')
+        ? ` data-github-download="${escapeHtml(item.name)}"` : '';
+      return `<a class="file-btn ${cls}" href="${escapeHtml(fileHref(item))}"${attr}${githubDownload}>` +
         `<span class="file-ico" aria-hidden="true">${ico}</span>` +
         `<span class="file-text">${label}</span>${fmtSize(item.size)}</a>`;
     };

@@ -37,6 +37,8 @@ jobs:
       - name: 验证工具交互与安全检查
         run: |
           set -euo pipefail
+          node --check 工具/build.js
+          node --check 工具/模板/assets/note.js
           node --check 工具/模板/assets/tool.js
           node 工具/tests/tool-ui.test.js
           PYTHONPATH=服务 python3 -m unittest discover -s 服务/tests -p 'test_*.py'
@@ -52,6 +54,7 @@ jobs:
             if [[ -n "$date" ]]; then touch -d "@$date" -- "$file"; fi
           done < <(git ls-files -z -- 内容)
           node 工具/build.js
+          node 工具/tests/download-links.test.js
           test -s 网站/index.html
           test -s 网站/sitemap.xml
           test -s 网站/search.html
@@ -68,6 +71,7 @@ jobs:
           cp 服务/prompts/*.py 服务/prompts/*.md "$payload/service/prompts/"
           cp 服务/templates/*.tex "$payload/service/templates/"
           python3 .github/deploy/pack.py "$GITHUB_SHA" "$payload/site" "$payload/service" release
+          SITE_DIR="$payload/site" CHECK_RELEASE_ASSETS=1 node 工具/tests/download-links.test.js
           # 与服务器发布接收器使用同一份白名单，发布前拒绝任何非许可文件。
           python3 - <<'PY'
           import importlib.util

@@ -18,6 +18,8 @@
 | 网页样式、搜索和工具页面 | `工具/模板/` |
 | AI 工具提示词 | `服务/prompts/` |
 
+笔记页的 Markdown、PDF、LaTeX 下载直接从 GitHub 上对应提交读取；源码与插图 ZIP 从对应 GitHub Release 下载。网站构建使用固定提交版本，保证同一版网页与下载的内容一致。发布流程逐篇校验下载链接和文件内容。
+
 每次发布的源码版本可在 [Releases](https://github.com/stormwhip/Stormarium/releases) 查看，当前上线版本可在[线上版本页](https://stormwhip.com/stormarium-version.txt)核对。
 
 ## 本地预览
