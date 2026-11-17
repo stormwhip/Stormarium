@@ -5,6 +5,23 @@
 (function () {
   'use strict';
 
+  function preventInspectionShortcuts() {
+    document.addEventListener('contextmenu', function (event) {
+      event.preventDefault();
+    }, true);
+    document.addEventListener('keydown', function (event) {
+      var key = (event.key || '').toLowerCase();
+      var modifier = event.ctrlKey || event.metaKey;
+      var devTools = modifier && event.shiftKey && ['i', 'j', 'c'].indexOf(key) !== -1;
+      var macTools = event.metaKey && event.altKey && ['i', 'j', 'c'].indexOf(key) !== -1;
+      if (key === 'f12' || devTools || macTools || (modifier && key === 'u')) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    }, true);
+  }
+  preventInspectionShortcuts();
+
   var KEY = 'theme';
   var root = document.documentElement;
 

@@ -19,24 +19,6 @@
   } catch (e) { /* 隐私模式下 localStorage 可能不可用，忽略即可 */ }
 })();
 </script>
-<meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'; form-action 'self'">
-<script>
-(function () {
-  document.addEventListener('contextmenu', function (event) {
-    event.preventDefault();
-  }, true);
-  document.addEventListener('keydown', function (event) {
-    var key = (event.key || '').toLowerCase();
-    var modifier = event.ctrlKey || event.metaKey;
-    var toolsShortcut = modifier && event.shiftKey && ['i', 'j', 'c'].indexOf(key) !== -1;
-    var macShortcut = event.metaKey && event.altKey && ['i', 'j', 'c'].indexOf(key) !== -1;
-    if (key === 'f12' || toolsShortcut || macShortcut || (modifier && key === 'u')) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
-  }, true);
-})();
-</script>
 </head>
 <body class="page-{{BODYCLASS}}">
 <a class="skip-link" href="#main">跳到正文</a>
@@ -45,7 +27,7 @@
 {{BODY}}
 </main>
 {{FOOTER}}
-<script src="{{ROOT}}assets/theme.js" defer></script>
+<script src="{{ROOT}}assets/theme.js?v={{THEME_VERSION}}" defer></script>
 {{SCRIPTS}}
 </body>
 </html>

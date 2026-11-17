@@ -1790,6 +1790,7 @@ async function main() {
       : source;
     writeText(P(DIRS.out, OUT_ASSETS, f), publicSource);
   });
+  const themeVersion = sha1(readBinary(P(DIRS.assets, 'theme.js'))).slice(0, 12);
   const noteScriptVersion = require('crypto').createHash('sha256')
     .update(readText(P(DIRS.assets, 'note.js'))).digest('hex').slice(0,16);
   const qaVersion = ENABLE_NOTE_QA ? require('crypto').createHash('sha256')
@@ -1957,6 +1958,7 @@ async function main() {
       HEADER: header,
       FOOTER: footerCommon,
       BODY: body,
+      THEME_VERSION: themeVersion,
       SCRIPTS: (scripts || '') + `\n<script src="${root}${OUT_ASSETS}/search.js?v=${searchVersion}" data-search-app data-root="${root}" data-version="${searchVersion}" defer></script>`,
     });
   }

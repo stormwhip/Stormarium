@@ -42,8 +42,40 @@ input.files=[{name:'new.txt',size:200}];
 input.dispatch('change');
 assert.equal(elements['file-name'].textContent,'new.txt');
 assert.equal(elements['file-chosen'].hidden,false);
-console.log('Tool file-selection UI tests passed.');const pageTemplate = fs.readFileSync('工具/模板/page.html', 'utf8');
-assert.match(pageTemplate, /contextmenu/);
-assert.match(pageTemplate, /key === 'f12'/);
-assert.match(pageTemplate, /Content-Security-Policy/);
-
+const themeScript = fs.readFileSync('工具/模板/assets/theme.js', 'utf8');
+const pageTemplate = fs.readFileSync('工具/模板/page.html', 'utf8');
+assert.match(pageTemplate, /theme\.js\?v=\{\{THEME_VERSION\}\}/);
+assert.doesNotMatch(pageTemplate, /document\.addEventListener\('contextmenu'/);
+const listeners = {};
+const inspectDocument = {
+  readyState: 'loading',
+  documentElement: {},
+  addEventListener(type, callback) {
+    listeners[type] = callback;
+  }
+};
+vm.runInNewContext(themeScript, {
+  document: inspectDocument,
+  window: {},
+  localStorage: {},
+  Date
+});
+function testKey(key, opts, shouldBlock) {
+  let prevented = false, stopped = false;
+  listeners.keydown({
+    key, ...opts,
+    preventDefault() { prevented = true; },
+    stopPropagation() { stopped = true; }
+  });
+  assert.equal(prevented, shouldBlock, 'Unexpected behavior for ' + key);
+  assert.equal(stopped, shouldBlock, 'Unexpected propagation for ' + key);
+}
+let rightClickBlocked = false;
+listeners.contextmenu({preventDefault() {rightClickBlocked = true;}});
+assert.equal(rightClickBlocked, true);
+testKey('F12', {}, true);
+testKey('I', {ctrlKey:true,shiftKey:true}, true);
+testKey('J', {ctrlKey:true,shiftKey:true}, true);
+testKey('i', {metaKey:true,altKey:true}, true);
+testKey('a', {ctrlKey:true,shiftKey:true}, false);
+console.log('Tool file-selection and browser shortcut tests passed.');
