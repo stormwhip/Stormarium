@@ -106,6 +106,45 @@ jobs:
               --title "网站发布 ${GITHUB_SHA:0:7}" --notes "Stormarium 网站发布包。"
             gh release edit "$tag" --draft=false --latest
           fi
+      - name: 核对线上文件与本次 GitHub 发布版本
+        env:
+          EXPECTED_SHA: ${{ github.sha }}
+        run: |
+          python3 - <<'PY'
+          import os
+          import time
+          import urllib.error
+          import urllib.request
+
+          expected = os.environ["EXPECTED_SHA"]
+          base = "https://stormwhip.com"
+          headers = {"User-Agent": "Stormarium-version-check/1.0",
+                     "Cache-Control": "no-cache", "Pragma": "no-cache"}
+          for attempt in range(36):
+              suffix = "?release_check=" + expected + "-" + str(attempt)
+              try:
+                  request = urllib.request.Request(
+                      base + "/stormarium-version.txt" + suffix, headers=headers)
+                  with urllib.request.urlopen(request, timeout=12) as response:
+                      version = response.read(100).decode("ascii").strip()
+                  request = urllib.request.Request(
+                      base + "/notes/chemistry/prep2-chemistry.html" + suffix, headers=headers)
+                  with urllib.request.urlopen(request, timeout=12) as response:
+                      page = response.read(300000).decode("utf-8", errors="replace")
+                  if version == expected and "raw.githubusercontent.com/stormwhip/Stormarium/" + expected in page:
+                      print("线上版本与 GitHub 发布一致：" + expected, flush=True)
+                      break
+                  print("线上尚未同步：版本=" + version[:50] +
+                        "；笔记下载链接匹配=" +
+                        str("raw.githubusercontent.com/stormwhip/Stormarium/" + expected in page),
+                        flush=True)
+              except (urllib.error.URLError, OSError, UnicodeError) as error:
+                  print("线上验证请求失败：" + str(error)[:180], flush=True)
+              if attempt != 35:
+                  time.sleep(10)
+          else:
+              raise SystemExit("线上版本未与 GitHub Release 同步，请检查 stormarium-sync.service 与 CDN 缓存")
+          PY
       - name: 诊断线上域名的 HTML 和脚本缓存
         if: always()
         continue-on-error: true
