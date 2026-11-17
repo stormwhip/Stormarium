@@ -41,6 +41,8 @@ DEFAULT_CONFIG: Dict[str, Any] = {
     "allowed_extensions": ["pdf", "pptx", "docx", "txt", "png", "jpg", "jpeg", "webp"],
     "per_ip_daily_limit": 5,
     "global_daily_limit": 50,
+    "allowed_origins": ["https://stormwhip.com", "https://www.stormwhip.com"],
+    "allowed_provider_hosts": ["api.deepseek.com"],
     "llm_timeout_seconds": 120,
     "tex_timeout_seconds": 60,
     # xelatex 子进程虚拟内存上限（MB，0 = 不限制）。服务器 1888MB 内存，实测峰值 300~600MB。
@@ -114,6 +116,12 @@ def _normalize(cfg: Dict[str, Any]) -> Dict[str, Any]:
     out["compile_pdf"] = bool(out.get("compile_pdf", True))
     out["trust_proxy"] = bool(out.get("trust_proxy", True))
     out["start_workers"] = bool(out.get("start_workers", True))
+    for key in ("allowed_origins", "allowed_provider_hosts"):
+        values = out.get(key, DEFAULT_CONFIG[key])
+        if not isinstance(values, (list, tuple)):
+            values = [values]
+        out[key] = sorted({str(value).strip().lower().rstrip("/")
+                           for value in values if str(value).strip()})
     effort = str(out.get("job_reasoning_effort") or "").strip().lower()
     out["job_reasoning_effort"] = effort if effort in ("low", "high", "max") else None
 

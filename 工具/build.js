@@ -1784,7 +1784,11 @@ async function main() {
   const styleVersion = require('crypto').createHash('sha256').update(css).digest('hex').slice(0,16);
   writeText(P(DIRS.out, OUT_ASSETS, 'style.css'), css);
   ['theme.js', 'note.js', 'tool.js', 'search.js', 'search-core.js', 'note-pdf.js', 'note-pdf.css', ...(ENABLE_NOTE_QA ? ['note-qa.js', 'note-qa.css'] : [])].forEach((f) => {
-    writeText(P(DIRS.out, OUT_ASSETS, f), readText(P(DIRS.assets, f)));
+    const source = readText(P(DIRS.assets, f));
+    const publicSource = f === 'tool.js'
+      ? source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^[\t ]*\/\/[^\n]*$/gm, '').replace(/\n[\t ]*\n/g, '\n')
+      : source;
+    writeText(P(DIRS.out, OUT_ASSETS, f), publicSource);
   });
   const noteScriptVersion = require('crypto').createHash('sha256')
     .update(readText(P(DIRS.assets, 'note.js'))).digest('hex').slice(0,16);

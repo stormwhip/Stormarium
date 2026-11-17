@@ -127,10 +127,14 @@
     return '';
   }
   function resolveUrl(url) {
-    if (!url) return '';
-    if (/^https?:\/\//i.test(url)) return url;
-    if (url.charAt(0) === '/') return location.origin + url;
-    try { return new URL(url, location.href).href; } catch (e) { return url; }
+    if (typeof url !== 'string' || !url) return '';
+    try {
+      var resolved = new URL(url, location.href);
+      if (resolved.origin !== location.origin ||
+          !/^\/api\/files\/[0-9a-f]{32}\.pdf$/.test(resolved.pathname) ||
+          resolved.search || resolved.hash) return '';
+      return resolved.href;
+    } catch (e) { return ''; }
   }
   function errorText(data, status) {
     if (data && data.error) return String(data.error);
@@ -160,28 +164,28 @@
     resetOutput();
   }
 
-  /* ---------- 选择 / 拖拽 ---------- */
+  /* ---------- 选择 / 拽拽 ---------- */
+  function pickFile() {
+    if (polling) return;
+    fileInput.value = '';
+    fileInput.click();
+  }
   dropZone.addEventListener('click', function (ev) {
     if (ev.target === fileInput || polling) return;
-    fileInput.click();
+    pickFile();
   });
   dropZone.addEventListener('keydown', function (ev) {
     if (ev.key === 'Enter' || ev.key === ' ' || ev.key === 'Spacebar') {
       ev.preventDefault();
-      if (!polling) fileInput.click();
+      pickFile();
     }
   });
   fileInput.addEventListener('change', function () {
     if (fileInput.files && fileInput.files[0]) setFile(fileInput.files[0]);
   });
-  fileClear.addEventListener('click', function () {
-    if (polling) return;
-    chosenFile = null;
-    fileInput.value = '';
-    fileChosen.hidden = true;
-    startBtn.disabled = true;
-    resetOutput();
-    clearError();
+  fileClear.addEventListener('click', function (ev) {
+    ev.stopPropagation();
+    pickFile();
   });
 
   ['dragenter', 'dragover'].forEach(function (name) {

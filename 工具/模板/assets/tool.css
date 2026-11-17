@@ -4,6 +4,7 @@
    =========================================================== */
 
 .tool-page { max-width: 760px; margin: 0 auto; padding: 26px 0 10px; }
+#tool-app [hidden] { display: none !important; }
 .tool-head { margin-bottom: 20px; }
 .tool-head .page-title { margin-bottom: 6px; }
 

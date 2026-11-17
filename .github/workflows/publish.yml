@@ -34,6 +34,13 @@ jobs:
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
           node-version: '24'
+      - name: 验证工具交互与安全检查
+        run: |
+          set -euo pipefail
+          node --check 工具/模板/assets/tool.js
+          node 工具/tests/tool-ui.test.js
+          PYTHONPATH=服务 python3 -m unittest discover -s 服务/tests -p 'test_*.py'
+          python3 -m compileall -q 服务
       - name: 生成网站
         env:
           TZ: Asia/Shanghai

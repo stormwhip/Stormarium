@@ -248,6 +248,18 @@ class Guard:
             return {"global": int(self._state["global"]), "ips": len(self._state["ips"])}
 
     # ---------------------------------------------------------------- 清理
+    def check_daily(self, ip: str) -> None:
+        """Reject exhausted quotas before accepting/uploading large request bodies."""
+        key = hash_ip(ip)
+        with self._lock:
+            self._rollover_if_needed()
+            per_ip_limit = int(self.config["per_ip_daily_limit"])
+            global_limit = int(self.config["global_daily_limit"])
+            if per_ip_limit > 0 and int(self._state["ips"].get(key, 0)) >= per_ip_limit:
+                raise ToolError(429, "该 IP 今日次数已用完，请明天再试")
+            if global_limit > 0 and int(self._state["global"]) >= global_limit:
+                raise ToolError(429, "今日全站生成次数已用完，请明天再试")
+
     def cleanup(self, now: Optional[datetime] = None) -> Dict[str, int]:
         """删除超过保留期的产物与遗留作业目录（默认 2 小时）。"""
         now = now or self._clock()

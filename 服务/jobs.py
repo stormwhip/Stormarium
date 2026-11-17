@@ -24,6 +24,7 @@ from errors import ToolError
 from extract import extract_text
 from guard import hash_ip
 from prompts.loader import build_prompts
+from input_safety import check_uploaded_text
 
 log = logging.getLogger(__name__)
 
@@ -254,6 +255,8 @@ class JobManager:
                 )
 
             # 2) 调大模型 --------------------------------------------------
+            check_uploaded_text(text)
+
             llm_timeout = int(self.config["llm_timeout_seconds"])
             self._update(
                 job_id,
@@ -321,7 +324,7 @@ class JobManager:
             self._fail(job_id, exc.message)
         except Exception as exc:  # noqa: BLE001 - 兜底，绝不把堆栈暴露给访客
             log.exception("作业 %s 内部错误", job_id)
-            self._fail(job_id, f"服务器内部错误（{type(exc).__name__}），请稍后再试")
+            self._fail(job_id, "服务器内部错误，请稍后再试")
         finally:
             self.guard.remove_work_dir(job_id)
 

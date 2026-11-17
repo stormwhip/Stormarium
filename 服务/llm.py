@@ -12,6 +12,7 @@ import time
 from typing import Any, Dict, Optional
 
 import requests
+from urllib.parse import urlsplit
 
 from errors import ToolError
 
@@ -49,6 +50,8 @@ class DeepSeekClient:
         self.temperature = float(config.get("temperature") if config.get("temperature") is not None else 0.2)
         self.max_tokens = int(config.get("max_tokens") or 4096)
         self._session = session or requests.Session()
+        if session is None:
+            self._session.trust_env = False
 
     @property
     def configured(self) -> bool:
@@ -70,6 +73,12 @@ class DeepSeekClient:
             )
 
         read_timeout = int(timeout or self.timeout)
+        parsed = urlsplit(self.base_url)
+        allowed = self.config.get("allowed_provider_hosts", ["api.deepseek.com"])
+        if (parsed.scheme != "https" or parsed.hostname not in allowed
+                or parsed.port not in (None, 443) or parsed.username or parsed.password
+                or parsed.query or parsed.fragment):
+            raise ToolError(500, "模型服务配置无效")
         url = f"{self.base_url}/chat/completions"
         payload = {
             "model": self.model,
@@ -110,15 +119,13 @@ class DeepSeekClient:
                 json=payload,
                 headers=headers,
                 timeout=(10, read_timeout),
+                allow_redirects=False,
             )
         except requests.Timeout as exc:
             raise ToolError(504, f"大模型调用超时（超过 {read_timeout} 秒），请稍后再试") from exc
         except requests.RequestException as exc:
             log.warning("连接 DeepSeek 失败：%s", exc)
-            raise ToolError(
-                502,
-                f"无法连接大模型接口（{self.base_url}），请检查服务器网络或稍后再试",
-            ) from exc
+            raise ToolError(502, "无法连接模型服务，请稍后重试") from exc
 
         elapsed = time.monotonic() - started
         log.info("DeepSeek 返回 HTTP %s，耗时 %.1f 秒", response.status_code, elapsed)

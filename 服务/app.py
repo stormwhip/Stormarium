@@ -112,43 +112,32 @@ def create_app(
         if not request.path.startswith("/api/"):
             return None
         if not guard.enabled:
-            return (
-                jsonify(
-                    {
-                        "ok": False,
-                        "enabled": False,
-                        "version": cfg["version"],
-                        "error": "工具当前已停用（服务端紧急开关 enabled=false），请稍后再试",
-                    }
-                ),
-                503,
-            )
+            return _json_error(503, "工具暂时不可用，请稍后再试")
+        if request.path == "/api/jobs" and request.method == "POST":
+            origin = request.headers.get("Origin", "").strip().lower()
+            site = request.headers.get("Sec-Fetch-Site", "").strip().lower()
+            if origin not in cfg["allowed_origins"] or site == "cross-site":
+                return _json_error(403, "请通过本站的工具页面上传文件")
+            if not (request.content_type or "").lower().startswith("multipart/form-data"):
+                return _json_error(415, "仅支持文件上传请求")
+            guard.check_daily(_guess_client_ip(cfg))
         return None
 
     @app.after_request
     def _security_headers(response):  # noqa: ANN202
-        response.headers.setdefault("X-Content-Type-Options", "nosniff")
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["Referrer-Policy"] = "no-referrer"
+        response.headers["Cross-Origin-Resource-Policy"] = "same-origin"
         if request.path.startswith("/api/"):
             response.headers["Cache-Control"] = "no-store"
+            response.headers["Content-Security-Policy"] = "default-src 'none'; frame-ancestors 'none'"
         return response
 
     # ------------------------------------------------------------ 健康检查
     @app.route("/api/health", methods=["GET"])
     def health():  # noqa: ANN202
-        return jsonify(
-            {
-                "ok": True,
-                "enabled": True,
-                "tex": bool(tex_service.available()),
-                "version": cfg["version"],
-                "queue": manager.queue_size(),
-                "limits": {
-                    "max_file_mb": cfg["max_file_mb"],
-                    "per_ip_daily": cfg["per_ip_daily_limit"],
-                    "global_daily": cfg["global_daily_limit"],
-                },
-            }
-        )
+        return jsonify({"ok": True})
 
     # ------------------------------------------------------------ 创建作业
     @app.route("/api/jobs", methods=["POST"])
