@@ -44,6 +44,7 @@ jobs:
           PYTHONPATH=服务 python3 -m unittest discover -s 服务/tests -p 'test_*.py'
           python3 -m compileall -q 服务
           python3 -m py_compile .github/deploy/pack.py .github/deploy/sync.py
+          python3 .github/deploy/test_delta.py
       - name: 生成网站
         env:
           TZ: Asia/Shanghai

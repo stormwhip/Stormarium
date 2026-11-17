@@ -82,7 +82,8 @@ def get(asset, path):
                 '来源', urlsplit(url).netloc)
             return
         except (subprocess.CalledProcessError, OSError, RuntimeError) as exc:
-            path.unlink(missing_ok=True)
+            if path.exists():
+                path.unlink()
             log('镜像失败', asset['name'], urlsplit(url).netloc, str(exc)[:150])
     raise RuntimeError('所有镜像均下载失败：' + asset['name'])
 
