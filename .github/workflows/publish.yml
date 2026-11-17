@@ -63,9 +63,31 @@ jobs:
           payload=$(mktemp -d)
           trap 'rm -rf -- "$payload"' EXIT
           mv 网站 "$payload/site"
-          mkdir "$payload/service"
-          cp -a 服务/*.py 服务/prompts 服务/templates 服务/requirements.txt "$payload/service/"
+          mkdir -p "$payload/service/prompts" "$payload/service/templates"
+          cp 服务/*.py 服务/requirements.txt "$payload/service/"
+          cp 服务/prompts/*.py 服务/prompts/*.md "$payload/service/prompts/"
+          cp 服务/templates/*.tex "$payload/service/templates/"
           python3 .github/deploy/pack.py "$GITHUB_SHA" "$payload/site" "$payload/service" release
+          # 与服务器发布接收器使用同一份白名单，发布前拒绝任何非许可文件。
+          python3 - <<'PY'
+          import importlib.util
+          import tarfile
+          from pathlib import PurePosixPath
+          spec = importlib.util.spec_from_file_location("release_receiver", ".github/deploy/receive.py")
+          receiver = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(receiver)
+          with tarfile.open("release/stormarium.tar.gz", "r:gz") as archive:
+              rejected = [
+                  member.name for member in archive
+                  if not member.isdir() and (
+                      not member.isreg()
+                      or not receiver.allowed(PurePosixPath(member.name).parts)
+                  )
+              ]
+          if rejected:
+              raise SystemExit("发布包包含不符合服务器白名单的文件：" + ", ".join(rejected[:20]))
+          print("发布包白名单校验通过")
+          PY
       - name: 在 GitHub 发布
         env:
           GH_TOKEN: ${{ github.token }}
