@@ -27,6 +27,7 @@ const counts = { 'md-btn': 0, 'pdf-btn': 0, 'tex-btn': 0, 'source-btn': 0 };
 const mdFound = new Set();
 for (const page of pages) {
   const html = fs.readFileSync(page, 'utf8');
+  if (!html.includes('id="note-root"')) continue; // Legacy redirect pages.
   const seen = new Set();
   const buttons = [...html.matchAll(/<a class="file-btn ([^"]+)" href="([^"]+)"([^>]*)>/g)];
   assert(buttons.length, '页面缺少下载按钮：' + page);
