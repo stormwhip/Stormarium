@@ -10,7 +10,7 @@ on:
       - '工具/**'
       - '服务/**'
       - '.github/workflows/publish.yml'
-      - '.github/deploy/pack.py'
+      - '.github/deploy/**'
   workflow_dispatch:
 
 permissions:
@@ -43,6 +43,7 @@ jobs:
           node 工具/tests/tool-ui.test.js
           PYTHONPATH=服务 python3 -m unittest discover -s 服务/tests -p 'test_*.py'
           python3 -m compileall -q 服务
+          python3 -m py_compile .github/deploy/pack.py .github/deploy/sync.py
       - name: 生成网站
         env:
           TZ: Asia/Shanghai
@@ -61,6 +62,8 @@ jobs:
           test -s 网站/tools/english.html
           test -z "$(find 网站 服务 -type l -print -quit)"
       - name: 生成发布包
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           payload=$(mktemp -d)
@@ -70,7 +73,11 @@ jobs:
           cp 服务/*.py 服务/requirements.txt "$payload/service/"
           cp 服务/prompts/*.py 服务/prompts/*.md "$payload/service/prompts/"
           cp 服务/templates/*.tex "$payload/service/templates/"
-          python3 .github/deploy/pack.py "$GITHUB_SHA" "$payload/site" "$payload/service" release
+          previous=$(gh release view --json tagName --jq .tagName 2>/dev/null || true)
+          if [[ -n "$previous" ]]; then
+            gh release download "$previous" --pattern site-manifest.json --dir "$payload" >/dev/null 2>&1 || true
+          fi
+          python3 .github/deploy/pack.py "$GITHUB_SHA" "$payload/site" "$payload/service" release "$payload/site-manifest.json"
           SITE_DIR="$payload/site" CHECK_RELEASE_ASSETS=1 node 工具/tests/download-links.test.js
           # 与服务器发布接收器使用同一份白名单，发布前拒绝任何非许可文件。
           python3 - <<'PY'
@@ -147,3 +154,41 @@ jobs:
                   except (urllib.error.URLError, TimeoutError, OSError) as exc:
                       print({"path": suffix, "error": str(exc)[:180]}, flush=True)
           PY
+
+  deploy:
+    name: 通知阿里云部署并核对版本
+    needs: publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: 通过受限 SSH 命令触发同步
+        env:
+          DEPLOY_HOST: ${{ secrets.STORMARIUM_DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.STORMARIUM_DEPLOY_USER }}
+          DEPLOY_KEY: ${{ secrets.STORMARIUM_DEPLOY_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.STORMARIUM_DEPLOY_KNOWN_HOSTS }}
+          DEPLOY_PORT: ${{ secrets.STORMARIUM_DEPLOY_PORT }}
+        run: |
+          set -euo pipefail
+          for key in DEPLOY_HOST DEPLOY_USER DEPLOY_KEY DEPLOY_KNOWN_HOSTS; do
+            if [[ -z "${!key}" ]]; then
+              echo "::error::缺少部署配置 $key，请完成服务器 SSH 授权与仓库 Secrets 配置"
+              exit 1
+            fi
+          done
+          install -d -m 700 "$HOME/.ssh"
+          printf '%s\n' "$DEPLOY_KEY" > "$HOME/.ssh/stormarium_deploy_key"
+          chmod 600 "$HOME/.ssh/stormarium_deploy_key"
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/known_hosts"
+          port="${DEPLOY_PORT:-22}"
+          actual=$(ssh -i "$HOME/.ssh/stormarium_deploy_key" -p "$port" \
+            -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+            -o ConnectTimeout=20 -o ServerAliveInterval=30 -o ServerAliveCountMax=2 \
+            "$DEPLOY_USER@$DEPLOY_HOST" deploy)
+          printf '%s\n' "$actual"
+          if ! grep -Fxq "STORMARIUM_DEPLOYED_SHA=$GITHUB_SHA" <<< "$actual"; then
+            echo '::error::服务器部署版本与此次提交不一致'
+            exit 1
+          fi
+          echo "部署已验证：$GITHUB_SHA"

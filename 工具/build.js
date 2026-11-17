@@ -1466,7 +1466,7 @@ async function main() {
       if (!sitePath) return null;
       let size = 0;
       try { size = fs.statSync(hit.abs).size; } catch (e) { size = 0; }
-      return { href: n.root + sitePath, downloadHref: githubSourceHref(hit.abs), size, name: path.basename(hit.abs) };
+      return { href: n.root + sitePath, size, name: path.basename(hit.abs) };
     };
     const pdfHit = n.legacy
       ? findSideFileForNoteLegacy(n.rel, 'pdf')
@@ -1490,7 +1490,7 @@ async function main() {
       if (mdDisk) {
         let size = 0;
         try { size = fs.statSync(n.mdAbs).size; } catch (e) { size = 0; }
-        n.md = { href: n.root + encodeSegs(mdDisk), downloadHref: githubSourceHref(n.mdAbs), size, name: path.basename(n.mdAbs) };
+        n.md = { href: n.root + encodeSegs(mdDisk), size, name: path.basename(n.mdAbs) };
       }
     }
 
@@ -1498,6 +1498,13 @@ async function main() {
       // 随文件内容更新下载与预览地址，避开旧版本的缓存。
       for (const [attachment, source] of [[n.md, n.mdAbs], [n.tex, texHit?.abs], [n.pdf, pdfHit?.abs]]) {
         if (attachment && source) attachment.href += '?v=' + sha1(readBinary(source)).slice(0, 16);
+      }
+    }
+
+    // 文件内容变动时更新下载地址，避免站点 CDN 复用旧版。
+    for (const [item, abs] of [[n.md, n.mdAbs], [n.pdf, pdfHit?.abs], [n.tex, texHit?.abs]]) {
+      if (item && abs && !item.href.includes('?v=')) {
+        item.href += '?v=' + sha1(readBinary(abs)).slice(0, 16);
       }
     }
 
@@ -1558,12 +1565,8 @@ async function main() {
       const bundle = require('./source-bundle').createBundle(n.noteDir, n.mdAbs, texHit.abs);
       if (bundle) {
         const disk = uniqueOutPath(OUT_FILE, `${n.noteName}-源码与插图.zip`);
-        const assetName = 'source-' + sha1(bundle).slice(0, 24) + '.zip';
-        const releasePath = /^[0-9a-f]{40}$/.test(GITHUB_REF)
-          ? 'download/site-' + GITHUB_REF + '/' : 'latest/download/';
         n.sourceBundle = {
           href: n.root + encodeSegs(disk),
-          downloadHref: 'https://github.com/' + GITHUB_REPO + '/releases/' + releasePath + assetName,
           size: bundle.length, disk, data: bundle,
         };
       }
@@ -2067,20 +2070,11 @@ async function main() {
       ? (size / 1024 / 1024).toFixed(1) + ' MB'
       : Math.max(1, Math.round(size / 1024)) + ' KB');
     const fmtSize = (size) => (size ? `<span class="file-size">${humanSize(size)}</span>` : '');
-    // 文件直链：配置了「文件CDN前缀」就走 CDN，否则用相对路径
-    const fileHref = (item) => {
-      if (!item) return '';
-      if (item.downloadHref) return item.downloadHref;
-      if (!cfg.fileCdnPrefix) return item.href;
-      // item.file 是 assets/file 下的原始文件名（含中文），CDN 上同样编码
-      const name = item.file || path.basename(decodeURIComponent(item.href));
-      return cfg.fileCdnPrefix + encodeSegs(name);
-    };
+    // 所有笔记附件从本站镜像下载，保留固定版本的下载链接。
+    const fileHref = (item) => item ? item.href : '';
     const fileBtn = (cls, ico, label, item, attr) => {
       if (!item) return '';
-      const githubDownload = item.downloadHref && item.downloadHref.startsWith('https://raw.githubusercontent.com/')
-        ? ` data-github-download="${escapeHtml(item.name)}"` : '';
-      return `<a class="file-btn ${cls}" href="${escapeHtml(fileHref(item))}"${attr}${githubDownload}>` +
+      return `<a class="file-btn ${cls}" href="${escapeHtml(fileHref(item))}"${attr}>` +
         `<span class="file-ico" aria-hidden="true">${ico}</span>` +
         `<span class="file-text">${label}</span>${fmtSize(item.size)}</a>`;
     };
