@@ -20,6 +20,10 @@
   "allowed_extensions": ["pdf", "pptx", "docx", "txt", "png", "jpg", "jpeg", "webp"],
   "per_ip_daily_limit": 5,
   "global_daily_limit": 50,
+  "upload_rate_per_minute": 8,
+  "read_rate_per_minute": 120,
+  "max_office_uncompressed_mb": 80,
+  "max_image_pixels": 25000000,
   "llm_timeout_seconds": 120,
   "tex_timeout_seconds": 60,
   "tex_memory_limit_mb": 900,
@@ -43,7 +47,7 @@
   "compile_pdf": true,
   "xelatex_path": "",
 
-  "_说明_其它": "trust_proxy=true 表示只信任本机 nginx 传来的 X-Real-IP；version 会出现在 /api/health。",
+  "_说明_其它": "trust_proxy=true 仅信任本机反向代理明确覆盖的 X-Real-IP，后端不信任 X-Forwarded-For。",
   "trust_proxy": true,
   "version": "1.0.0"
 }

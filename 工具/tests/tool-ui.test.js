@@ -42,4 +42,8 @@ input.files=[{name:'new.txt',size:200}];
 input.dispatch('change');
 assert.equal(elements['file-name'].textContent,'new.txt');
 assert.equal(elements['file-chosen'].hidden,false);
-console.log('Tool file-selection UI tests passed.');
+console.log('Tool file-selection UI tests passed.');const pageTemplate = fs.readFileSync('工具/模板/page.html', 'utf8');
+assert.match(pageTemplate, /contextmenu/);
+assert.match(pageTemplate, /key === 'f12'/);
+assert.match(pageTemplate, /Content-Security-Policy/);
+

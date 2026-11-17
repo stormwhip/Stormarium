@@ -29,6 +29,7 @@ from guard import Guard, hash_ip
 from jobs import JobManager
 from llm import DeepSeekClient
 from prompts.loader import PROMPT_FILES
+from upload_safety import validate_upload
 from tex import LatexService
 
 log = logging.getLogger(__name__)
@@ -53,9 +54,6 @@ def _guess_client_ip(config: Dict[str, Any]) -> str:
         real_ip = (request.headers.get("X-Real-IP") or "").strip()
         if real_ip:
             candidates.append(real_ip)
-        forwarded = (request.headers.get("X-Forwarded-For") or "").split(",")[0].strip()
-        if forwarded:
-            candidates.append(forwarded)
     candidates.append(remote)
     for candidate in candidates:
         try:
@@ -113,6 +111,10 @@ def create_app(
             return None
         if not guard.enabled:
             return _json_error(503, "工具暂时不可用，请稍后再试")
+        ip = _guess_client_ip(cfg)
+        guard.check_request_rate(
+            ip, "upload" if request.path == "/api/jobs" and request.method == "POST" else "read"
+        )
         if request.path == "/api/jobs" and request.method == "POST":
             origin = request.headers.get("Origin", "").strip().lower()
             site = request.headers.get("Sec-Fetch-Site", "").strip().lower()
@@ -120,7 +122,7 @@ def create_app(
                 return _json_error(403, "请通过本站的工具页面上传文件")
             if not (request.content_type or "").lower().startswith("multipart/form-data"):
                 return _json_error(415, "仅支持文件上传请求")
-            guard.check_daily(_guess_client_ip(cfg))
+            guard.check_daily(ip)
         return None
 
     @app.after_request
@@ -169,6 +171,12 @@ def create_app(
         work_dir = guard.work_dir(job_id)
         try:
             size = guard.save_upload(upload, work_dir / f"input.{ext}")
+            validate_upload(
+                work_dir / f"input.{ext}",
+                ext,
+                max_office_uncompressed=int(cfg["max_office_uncompressed_mb"]) * 1024 * 1024,
+                max_image_pixels=int(cfg["max_image_pixels"]),
+            )
             log.info(
                 "收到上传：job=%s tool=%s task=%s ext=%s size=%d ip=%s",
                 job_id,

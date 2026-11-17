@@ -200,8 +200,12 @@ def _extract_image(path: Path, config: Dict[str, Any]) -> str:
 
     try:
         with Image.open(str(path)) as image:
+            if image.width * image.height > int(config.get("max_image_pixels", 25000000)):
+                raise ToolError(400, "图片分辨率过高，请缩小图片后重试")
             image.load()
             rgb = image.convert("RGB")
+    except ToolError:
+        raise
     except Exception as exc:
         log.info("打开图片失败：%s", exc)
         raise ToolError(

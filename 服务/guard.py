@@ -14,6 +14,10 @@
 from __future__ import annotations
 
 import hashlib
+import hmac
+import secrets
+import time
+from collections import deque
 import json
 import logging
 import os
@@ -30,8 +34,25 @@ from errors import ToolError
 log = logging.getLogger(__name__)
 
 JOB_ID_RE = re.compile(r"^[0-9a-f]{32}$")
-_IP_SALT = "storm-tools-local-only"
+_IP_SALT = None
 _CHUNK = 64 * 1024
+
+def _load_ip_salt(data_dir: Path) -> bytes:
+    path = data_dir / "ip-hmac-key"
+    if not path.exists():
+        try:
+            fd = os.open(str(path), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+        except FileExistsError:
+            pass
+        else:
+            with os.fdopen(fd, "wb") as handle:
+                handle.write(secrets.token_bytes(32))
+                handle.flush()
+                os.fsync(handle.fileno())
+    key = path.read_bytes()
+    if len(key) != 32:
+        raise RuntimeError("IP hash key is invalid")
+    return key
 
 
 def _atomic_write_json(path: Path, payload: Dict[str, Any], mode: int = 0o600) -> None:
@@ -49,7 +70,9 @@ def _atomic_write_json(path: Path, payload: Dict[str, Any], mode: int = 0o600) -
 
 def hash_ip(ip: str) -> str:
     """IP 脱敏：只存加盐哈希前 16 位。"""
-    return hashlib.sha256((_IP_SALT + str(ip)).encode("utf-8")).hexdigest()[:16]
+    if _IP_SALT is None:
+        raise RuntimeError("Guard must be initialized before hashing IP addresses")
+    return hmac.new(_IP_SALT, str(ip).encode("utf-8"), hashlib.sha256).hexdigest()[:16]
 
 
 class Guard:
@@ -64,6 +87,7 @@ class Guard:
         self.work_root = self.data_dir / "work"
         self.files_root = self.data_dir / "files"
         self._state_path = self.data_dir / "guard-state.json"
+        self._recent_requests = {}
 
         self.max_bytes = int(config["max_file_mb"]) * 1024 * 1024
         self.allowed_extensions = list(config["allowed_extensions"])
@@ -76,6 +100,8 @@ class Guard:
                 pass
 
         self._state = self._load_state()
+        global _IP_SALT
+        _IP_SALT = _load_ip_salt(self.data_dir)
 
     # ------------------------------------------------------------------ 开关
     @property
@@ -248,6 +274,28 @@ class Guard:
             return {"global": int(self._state["global"]), "ips": len(self._state["ips"])}
 
     # ---------------------------------------------------------------- 清理
+    def check_request_rate(self, ip: str, category: str) -> None:
+        limits = {
+            "upload": int(self.config["upload_rate_per_minute"]),
+            "read": int(self.config["read_rate_per_minute"]),
+        }
+        limit = limits.get(category, 0)
+        if limit <= 0:
+            return
+        now = time.monotonic()
+        identity = (hash_ip(ip), category)
+        with self._lock:
+            entries = self._recent_requests.setdefault(identity, deque())
+            while entries and now - entries[0] >= 60:
+                entries.popleft()
+            if len(entries) >= limit:
+                raise ToolError(429, "请求过于频繁，请一分钟后重试")
+            entries.append(now)
+            if len(self._recent_requests) > 4096:
+                for key, bucket in list(self._recent_requests.items()):
+                    if not bucket or now - bucket[-1] >= 60:
+                        self._recent_requests.pop(key, None)
+
     def check_daily(self, ip: str) -> None:
         """Reject exhausted quotas before accepting/uploading large request bodies."""
         key = hash_ip(ip)
