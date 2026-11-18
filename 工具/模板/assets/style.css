@@ -1953,3 +1953,7 @@ body.page-note .to-top:hover { background:var(--note-top-hover-bg,linear-gradien
 /* 页脚保持整体居中，版本号位于备案号右侧。 */
 .site-foot .foot-version { display: inline-block; white-space: nowrap; margin-left: 12px; color: var(--text-soft); font-size: 12.4px; font-variant-numeric: tabular-nums; }
 @media (max-width: 480px) { .site-foot .foot-version { margin-left: 0; } }
+
+.site-foot .foot-github { display:inline-flex; align-items:center; justify-content:center; font-size:12.4px; color:var(--text-soft); text-decoration:underline; text-underline-offset:3px; margin-left:8px; }
+.site-foot .foot-github:hover { color:var(--brand); }
+.site-foot .foot-github:focus-visible { outline:2px solid var(--brand); outline-offset:3px; border-radius:3px; }

@@ -7,6 +7,7 @@ const version = JSON.parse(fs.readFileSync(path.join(root,'站点配置.json'),'
 const get = p => fs.readFileSync(path.join(site,p),'utf8');
 const index = get('index.html'), lost = get('404.html'), other = get('subjects/other.html');
 assert(index.includes('当前版本：' + version), '首页页脚缺少版本号');
+assert(index.includes('href="https://github.com/stormwhip/Stormarium"'), '页脚缺少 GitHub 链接');
 assert(lost.includes('当前版本：' + version), '404 页脚缺少版本号');
 assert(lost.includes('404 这里什么也没有'), '404 主标题不正确');
 assert(lost.includes('href="/"') && lost.includes('返回首页'), '404 首页链接缺失');
