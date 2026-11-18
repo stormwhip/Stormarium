@@ -1931,7 +1931,8 @@ async function main() {
     beianItems.push(`<a class="beian" href="https://beian.mps.gov.cn/" target="_blank" rel="noopener noreferrer">${escapeHtml(cfg.police)}</a>`);
   }
   const beianBlock = `\n    <p class="foot-line foot-beian">${beianItems.join(' · ')}
-      <span class="foot-version">当前版本：${escapeHtml(cfg.version)}</span></p>`;
+      <span class="foot-version">当前版本：${escapeHtml(cfg.version)}</span>
+      <a class="foot-github" href="https://github.com/stormwhip/Stormarium" target="_blank" rel="noopener noreferrer" aria-label="在 GitHub 查看 Stormarium 源码">GitHub</a></p>`;
   const footerCommon = fill(templates.footer, {
     '昵称': escapeHtml(cfg.nickname),
     '页脚文字': cfg.footerText === 'Stormarium' ? '<span class="footer-art-brand" role="img" aria-label="Stormarium"></span>' : escapeHtml(cfg.footerText),
