@@ -260,31 +260,35 @@
     /* ---- 3. 目录高亮：滚动到哪个标题就点亮哪一项 ---- */
     var headings = body.querySelectorAll('h2[id], h3[id]');
     var links = document.querySelectorAll('.toc a[href^="#"]');
-    if (headings.length && links.length && 'IntersectionObserver' in window) {
-      var visible = {};
+    if (headings.length && links.length) {
+      var activeId = null;
+      var pendingTocFrame = false;
       var setActive = function () {
-        var best = null, bestTop = Infinity;
+        pendingTocFrame = false;
         var cutoff = navigationOffset() + 8;
-        Object.keys(visible).forEach(function (id) {
-          if (!visible[id]) return;
-          var el = document.getElementById(id);
-          if (!el) return;
-          var top = el.getBoundingClientRect().top;
-          if (top <= cutoff) {
-            if (bestTop > cutoff || top > bestTop) { bestTop = top; best = id; }
-          } else if (bestTop > cutoff && top < bestTop) { bestTop = top; best = id; }
-        });
-        if (!best) return;
-        Array.prototype.forEach.call(links, function (a) { a.classList.remove('toc-active'); });
+        var best = headings[0].id;
+        for (var i = 0; i < headings.length; i++) {
+          if (headings[i].getBoundingClientRect().top > cutoff) break;
+          best = headings[i].id;
+        }
+        if (best === activeId) return;
+        activeId = best;
         Array.prototype.forEach.call(links, function (a) {
-          if (decodeURIComponent(a.getAttribute('href').slice(1)) === best) a.classList.add('toc-active');
+          var id = a.getAttribute('href').slice(1);
+          try { id = decodeURIComponent(id); } catch (e) {}
+          a.classList.toggle('toc-active', id === best);
         });
       };
-      var io = new IntersectionObserver(function (entries) {
-        entries.forEach(function (e) { visible[e.target.id] = e.isIntersecting; });
-        setActive();
-      }, { rootMargin: '-70px 0px -70% 0px', threshold: [0, 1] });
-      Array.prototype.forEach.call(headings, function (h) { io.observe(h); });
+      var scheduleToc = function () {
+        if (pendingTocFrame) return;
+        pendingTocFrame = true;
+        window.requestAnimationFrame(setActive);
+      };
+      window.addEventListener('scroll', scheduleToc, { passive: true });
+      window.addEventListener('resize', scheduleToc);
+      window.addEventListener('hashchange', scheduleToc);
+      if ('ResizeObserver' in window) new ResizeObserver(scheduleToc).observe(body);
+      scheduleToc();
     }
 
     /* ---- 4. 太宽的行内公式：只让真正放不下的那一段横向滚动 ----
