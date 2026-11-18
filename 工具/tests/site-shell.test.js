@@ -9,6 +9,7 @@ const index = get('index.html'), lost = get('404.html'), other = get('subjects/o
 assert(index.includes('当前版本：' + version), '首页页脚缺少版本号');
 assert(lost.includes('当前版本：' + version), '404 页脚缺少版本号');
 assert(lost.includes('404 这里什么也没有'), '404 主标题不正确');
-assert(lost.includes('href="index.html"') && lost.includes('返回首页'), '404 首页链接缺失');
+assert(lost.includes('href="/"') && lost.includes('返回首页'), '404 首页链接缺失');
+assert(lost.includes('href="/assets/style.css'), '404 页面样式需要绝对路径');
 assert(!other.includes('历史与文化 PPT'), '已删除的历史与文化 PPT 仍在目录');
 console.log('404、页脚和目录校验通过：' + version);

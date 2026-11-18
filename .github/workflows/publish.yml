@@ -199,3 +199,22 @@ jobs:
             exit 1
           fi
           echo "部署已验证：$GITHUB_SHA"
+
+      - name: 核查嵌套错误路径是否显示自定义 404
+        continue-on-error: true
+        run: |
+          python3 - <<'PY'
+          import urllib.error
+          import urllib.request
+          url = "https://stormwhip.com/notes/stormarium-404-probe-20261118"
+          try:
+              with urllib.request.urlopen(url, timeout=20) as response:
+                  status, body = response.status, response.read(200000).decode("utf-8", "replace")
+          except urllib.error.HTTPError as exc:
+              status, body = exc.code, exc.read(200000).decode("utf-8", "replace")
+          if status != 404 or "404 这里什么也没有" not in body:
+              print("::warning::网站无效路径未正确使用自定义 404 页面，可能需要服务器配置 error_page 404 /404.html;")
+              print("404 探测结果:", status, "自定义页面:", "404 这里什么也没有" in body)
+          else:
+              print("嵌套路径 404 已生效，状态:", status)
+          PY

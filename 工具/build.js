@@ -2280,7 +2280,7 @@ ${n.html}
 
   /* --- 7d. 404 --- */
   writeText(P(DIRS.out, '404.html'), page({
-    root: '',
+    root: '/',
     bodyClass: 'notfound',
     pageTitle: `页面不存在 - ${cfg.siteTitle}`,
     description: '页面不存在',
