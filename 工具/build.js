@@ -92,6 +92,7 @@ const NOTE_SLUGS = {
   [MIT1806_NOTE_NAME]: 'mit1806', '预科二物理笔记': 'prep2-physics',
   '预科二英语笔记': 'prep2-english', '少年班结业指南-2026': 'graduation-guide-2026',
   '预科二竞赛指南': 'prep2-contest-guide', '预科二上学期期末复习手册': 'prep2-final-review',
+  '2024级少年班专业选择方案': 'major-selection-2024', '少年班新生Q&A-2025': 'freshmen-qa-2025',
 };
 const TOOL_SLUGS = { '重点总结器': 'summary', '英语课助手': 'english', '光学干涉实验室': 'interference-lab', '原子轨道可视化': 'atomic-orbitals' };
 function subjectSlug(subject) { return SUBJECT_SLUGS[subject] || `subject-${sha1(subject).slice(0, 10)}`; }
