@@ -41,6 +41,7 @@ jobs:
           node --check 工具/模板/assets/note.js
           node --check 工具/模板/assets/tool.js
           node 工具/tests/tool-ui.test.js
+          node 工具/tests/notes-format.test.js
           PYTHONPATH=服务 python3 -m unittest discover -s 服务/tests -p 'test_*.py'
           python3 -m compileall -q 服务
           python3 -m py_compile .github/deploy/pack.py .github/deploy/sync.py
