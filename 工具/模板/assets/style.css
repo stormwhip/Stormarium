@@ -1349,20 +1349,30 @@ body.note-pdf-view .toc-desktop { display: none !important; }
 }
 .att-dl:hover { border-color: var(--brand); color: var(--brand); text-decoration: none; }
 
-/* ---------------- 404 ---------------- */
-.notfound { text-align: center; padding: 60px 30px; }
-.nf-code { font-size: 78px; font-weight: 800; margin: 0; color: var(--brand); letter-spacing: 4px; line-height: 1; }
-.nf-actions { margin: 24px 0 10px; }
-.btn {
-  display: inline-block;
-  padding: 10px 24px;
-  border-radius: 999px;
-  background: var(--brand);
-  color: #fff;
-  font-size: 15px;
-}
-.btn:hover { background: var(--brand-deep); text-decoration: none; color: #fff; }
-.nf-tip { font-size: 13.5px; color: var(--text-faint); margin: 18px 0 0; }
+/* ---------------- 404：星图迷途 ---------------- */
+body.page-notfound { min-height: 100svh; display: flex; flex-direction: column; }
+body.page-notfound > main { flex: 1; width: 100%; display: grid; place-items: center; padding-top: 48px; padding-bottom: 48px; }
+.nf-scene { width: min(100%, 790px); min-height: 455px; position: relative; display: grid; place-items: center; isolation: isolate; overflow: hidden; border: 1px solid var(--line); border-radius: 28px; background: var(--bg-soft); box-shadow: 0 20px 75px rgba(24, 30, 45, 0.07); padding: 58px 24px 50px; text-align: center; }
+.nf-scene::before { content: ''; position: absolute; inset: 0; z-index: -2; pointer-events: none; background: radial-gradient(ellipse at 50% 38%, color-mix(in srgb, var(--brand) 13%, transparent), transparent 56%), radial-gradient(circle at 8% 83%, color-mix(in srgb, var(--brand) 7%, transparent), transparent 31%); }
+.nf-scene::after { content: ''; position: absolute; inset: 0; z-index: -1; opacity: .22; background-image: radial-gradient(var(--brand) .8px, transparent .8px); background-size: 28px 28px; mask-image: radial-gradient(ellipse at center, transparent 16%, black 100%); pointer-events: none; }
+.nf-orbit { position: absolute; width: 370px; height: 370px; border: 1px solid color-mix(in srgb, var(--brand) 17%, transparent); border-radius: 50%; z-index: -1; pointer-events: none; }
+.nf-orbit-a { transform: rotate(-28deg) scaleY(.53); }
+.nf-orbit-b { transform: rotate(42deg) scaleY(.53); }
+.nf-content { position: relative; z-index: 1; width: 100%; }
+.nf-index { display: flex; justify-content: center; align-items: center; gap: 13px; color: var(--text-faint); letter-spacing: .21em; font-size: 10px; font-weight: 700; }
+.nf-index-line { width: 26px; height: 1px; background: var(--line-strong); }
+.nf-code { margin: 6px 0 0; font-size: clamp(96px, 17vw, 150px); line-height: 1.14; font-weight: 800; letter-spacing: -.075em; color: var(--brand); text-shadow: 0 12px 42px color-mix(in srgb, var(--brand) 15%, transparent); }
+.nf-code-dot { color: var(--text-faint); }
+.nf-heading { font-size: clamp(19px, 3vw, 25px); font-weight: 700; letter-spacing: .04em; margin: -1px 0 12px; color: var(--text); }
+.nf-desc { color: var(--text-soft); margin: 0 auto 28px; font-size: 14px; line-height: 1.85; max-width: 360px; }
+.nf-home { display: inline-flex; align-items: center; justify-content: center; gap: 10px; padding: 12px 23px; border-radius: 999px; background: var(--brand); color: #fff; font-size: 14px; font-weight: 700; box-shadow: 0 7px 20px color-mix(in srgb, var(--brand) 19%, transparent); transition: transform .16s ease, box-shadow .16s ease, background .16s ease; }
+.nf-home:hover { color: #fff; text-decoration: none; background: var(--brand-deep); transform: translateY(-2px); box-shadow: 0 10px 26px color-mix(in srgb, var(--brand) 28%, transparent); }
+.nf-home:focus-visible { outline: 3px solid var(--brand); outline-offset: 4px; }
+.nf-deco { margin: 30px auto 0; display: flex; justify-content: center; gap: 6px; }
+.nf-deco i { width: 4px; height: 4px; border-radius: 50%; background: var(--line-strong); }
+.nf-deco i:nth-child(2) { background: var(--brand); }
+@media (max-width: 560px) { body.page-notfound > main { padding-top: 24px; padding-bottom: 24px; } .nf-scene { min-height: 430px; padding: 46px 15px 32px; border-radius: 19px; } .nf-orbit { width: 270px; height: 270px; } .nf-desc { padding: 0 16px; } }
+@media (prefers-reduced-motion: reduce) { .nf-home { transition: none; } }
 
 /* ---------------- 页脚 ---------------- */
 .site-foot {
@@ -1939,3 +1949,7 @@ body.page-note .to-top:hover { background:var(--note-top-hover-bg,linear-gradien
 @media(max-width:720px) {
   body.page-note .to-top { bottom:calc(14px + env(safe-area-inset-bottom,0px)); }
 }
+
+/* 页脚保持整体居中，版本号位于备案号右侧。 */
+.site-foot .foot-version { display: inline-block; white-space: nowrap; margin-left: 12px; color: var(--text-soft); font-size: 12.4px; font-variant-numeric: tabular-nums; }
+@media (max-width: 480px) { .site-foot .foot-version { margin-left: 0; } }

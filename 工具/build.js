@@ -85,7 +85,7 @@ const MIT1806_LEGACY_NAMES = [
 const NOTE_SLUGS = {
   '语文 I 戏剧部分复习作业': 'chinese1-drama-review',
   '无机化学实验教材': 'inorganic-lab', '预科二化学笔记': 'prep2-chemistry', '预科一化学笔记': 'prep1-chemistry',
-  '笔记格式说明': 'format-guide', '历史与文化 PPT': 'history-culture', '少年班生物实验讲义': 'biology-lab',
+  '笔记格式说明': 'format-guide', '少年班生物实验讲义': 'biology-lab',
   '生物 I 笔记': 'biology-1', '预科二生物笔记': 'prep2-biology', '生物 II 笔记': 'biology-2',
   '高数上期中真题-2026': 'calculus-midterm-2026', '高数上期中真题解析-2026': 'calculus-midterm-solutions-2026',
   '数学 I 历次作业及解答': 'math1-homework', '预科二数学笔记': 'prep2-math',
@@ -250,6 +250,7 @@ function loadConfig() {
     bio: json['简介'] || '',
     avatar: json['头像'] || json['avatar'] || '',
     footerText: json['页脚文字'] || '',
+    version: String(json['版本号'] || '').trim(),
     icp: String(json['备案号'] || json.icp || '').trim(),
     police: String(json['公安备案号'] || json.police || '').trim(),
     siteUrl: (json['站点地址'] || '').replace(/\/+$/, ''),
@@ -257,6 +258,7 @@ function loadConfig() {
     links: json['社交链接'] || json['links'] || [],
     options: json['生成选项'] || {},
   };
+  if (!/^\d+\.\d+\.\d+-[A-Za-z0-9]+$/.test(cfg.version)) throw new Error('版本号格式应为 MAJOR.MINOR.PATCH-选手ID');
   if (!Array.isArray(cfg.links)) cfg.links = [];
   // 过滤掉没填地址的链接（含「地址」/「名称」/ name / url 各种写法）
   cfg.links = cfg.links
@@ -1927,9 +1929,8 @@ async function main() {
   if (cfg.police) {
     beianItems.push(`<a class="beian" href="https://beian.mps.gov.cn/" target="_blank" rel="noopener noreferrer">${escapeHtml(cfg.police)}</a>`);
   }
-  const beianBlock = beianItems.length
-    ? `\n    <p class="foot-line foot-beian">${beianItems.join('\n      <span class="foot-sep" aria-hidden="true">·</span>\n      ')}</p>`
-    : '';
+  const beianBlock = `\n    <p class="foot-line foot-beian">${beianItems.join(' · ')}
+      <span class="foot-version">当前版本：${escapeHtml(cfg.version)}</span></p>`;
   const footerCommon = fill(templates.footer, {
     '昵称': escapeHtml(cfg.nickname),
     '页脚文字': cfg.footerText === 'Stormarium' ? '<span class="footer-art-brand" role="img" aria-label="Stormarium"></span>' : escapeHtml(cfg.footerText),

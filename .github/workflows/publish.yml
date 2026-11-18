@@ -38,6 +38,8 @@ jobs:
         run: |
           set -euo pipefail
           node --check 工具/build.js
+          node --check 工具/version.js
+          node 工具/version.js check
           node --check 工具/模板/assets/note.js
           node --check 工具/模板/assets/tool.js
           node 工具/tests/tool-ui.test.js
@@ -58,6 +60,7 @@ jobs:
           done < <(git ls-files -z -- 内容)
           node 工具/build.js
           node 工具/tests/download-links.test.js
+          node 工具/tests/site-shell.test.js
           test -s 网站/index.html
           test -s 网站/sitemap.xml
           test -s 网站/search.html
@@ -106,14 +109,16 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
+          # 保留服务器同步所用的内部 SHA 标签；GitHub Release 展示名称遵循版本规则。
+          version=$(node 工具/version.js show)
           tag="site-$GITHUB_SHA"
           if gh release view "$tag" >/dev/null 2>&1; then
             gh release upload "$tag" release/* --clobber
-            gh release edit "$tag" --draft=false --latest
+            gh release edit "$tag" --title "$version" --draft=false --latest
           else
             gh release create "$tag" release/* --target "$GITHUB_SHA" --draft \
-              --title "网站发布 ${GITHUB_SHA:0:7}" --notes "Stormarium 网站发布包。"
-            gh release edit "$tag" --draft=false --latest
+              --title "$version" --notes "Stormarium 版本 $version；源码提交 $GITHUB_SHA。"
+            gh release edit "$tag" --title "$version" --draft=false --latest
           fi
       - name: 诊断线上域名的 HTML 和脚本缓存
         if: always()
