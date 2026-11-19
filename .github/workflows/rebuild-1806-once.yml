@@ -30,7 +30,7 @@ jobs:
           sed -i \
             -e 's/Times New Roman/TeX Gyre Termes/g' \
             -e 's/SimSun/Noto Serif CJK SC/g' \
-            -e 's/KaiTi/FandolKai-Regular/g' \
+            -e 's/KaiTi/Noto Serif CJK SC/g' \
             /tmp/lecture-20-rebuild/notes.tex
           pushd /tmp/lecture-20-rebuild
           xelatex -interaction=nonstopmode -halt-on-error notes.tex > first-pass.log 2>&1 || { tail -100 first-pass.log; exit 1; }
