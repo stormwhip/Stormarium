@@ -9,4 +9,3 @@
 高数上期中真题-2026
 高数上期中真题解析-2026
 MIT 18.06 Linear Algebra 笔记
-MIT 18.06 Lecture 20 笔记
