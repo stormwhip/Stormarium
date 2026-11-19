@@ -18,7 +18,7 @@ jobs:
       - name: Install XeLaTeX and Chinese fonts
         run: |
           sudo apt-get update -qq
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq texlive-xetex texlive-lang-chinese texlive-latex-extra fonts-noto-cjk fonts-texgyre fonts-arphic-gkai poppler-utils
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq texlive-xetex texlive-lang-chinese texlive-latex-extra fonts-noto-cjk fonts-texgyre poppler-utils
       - name: Compile PDF using available font equivalents
         shell: bash
         run: |
@@ -30,7 +30,7 @@ jobs:
           sed -i \
             -e 's/Times New Roman/TeX Gyre Termes/g' \
             -e 's/SimSun/Noto Serif CJK SC/g' \
-            -e 's/KaiTi/AR PL KaitiM GB/g' \
+            -e 's/KaiTi/FandolKai-Regular/g' \
             /tmp/lecture-20-rebuild/notes.tex
           pushd /tmp/lecture-20-rebuild
           xelatex -interaction=nonstopmode -halt-on-error notes.tex > first-pass.log 2>&1 || { tail -100 first-pass.log; exit 1; }
