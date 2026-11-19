@@ -1,0 +1,54 @@
+name: Temporary MIT 18.06 PDF rebuild
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/rebuild-1806-once.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - name: Install XeLaTeX and Chinese fonts
+        run: |
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq texlive-xetex texlive-lang-chinese texlive-latex-extra fonts-noto-cjk fonts-texgyre fonts-arphic-gkai poppler-utils
+      - name: Compile PDF using available font equivalents
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC='内容/数学/MIT 18.06 Linear Algebra 笔记/latex/MIT18.06线性代数计算笔记_Lecture1-19选编.tex'
+          PDF='内容/数学/MIT 18.06 Linear Algebra 笔记/pdf/MIT18.06线性代数计算笔记_Lecture1-19选编.pdf'
+          mkdir -p /tmp/lecture-20-rebuild
+          cp "$SRC" /tmp/lecture-20-rebuild/notes.tex
+          sed -i \
+            -e 's/Times New Roman/TeX Gyre Termes/g' \
+            -e 's/SimSun/Noto Serif CJK SC/g' \
+            -e 's/KaiTi/AR PL KaitiM GB/g' \
+            /tmp/lecture-20-rebuild/notes.tex
+          pushd /tmp/lecture-20-rebuild
+          xelatex -interaction=nonstopmode -halt-on-error notes.tex > first-pass.log 2>&1 || { tail -100 first-pass.log; exit 1; }
+          xelatex -interaction=nonstopmode -halt-on-error notes.tex > second-pass.log 2>&1 || { tail -100 second-pass.log; exit 1; }
+          test -s notes.pdf
+          pdftotext -layout notes.pdf notes.txt
+          grep -q 'Lecture 20' notes.txt
+          grep -q '克拉默法则' notes.txt
+          pdfinfo notes.pdf | grep -E 'Pages:|Page size:'
+          if grep -E 'Overfull \\vbox|Overfull \\hbox' second-pass.log; then
+            echo 'LaTeX reports overfull boxes; inspect layout'
+          fi
+          popd
+          cp /tmp/lecture-20-rebuild/notes.pdf "$PDF"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- "$PDF"
+          git diff --cached --quiet && { echo 'PDF is already current'; exit 0; }
+          git commit -m 'docs: rebuild MIT 18.06 PDF with Lecture 20'
+          git pull --rebase origin main
+          git push origin HEAD:main
