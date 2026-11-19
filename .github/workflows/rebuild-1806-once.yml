@@ -23,6 +23,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          git pull --ff-only origin main
           SRC='内容/数学/MIT 18.06 Linear Algebra 笔记/latex/MIT18.06线性代数计算笔记_Lecture1-19选编.tex'
           PDF='内容/数学/MIT 18.06 Linear Algebra 笔记/pdf/MIT18.06线性代数计算笔记_Lecture1-19选编.pdf'
           mkdir -p /tmp/lecture-20-rebuild
