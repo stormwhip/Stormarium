@@ -14,3 +14,23 @@ assert(lost.includes('href="/"') && lost.includes('返回首页'), '404 首页�
 assert(lost.includes('href="/assets/style.css'), '404 页面样式需要绝对路径');
 assert(!other.includes('历史与文化 PPT'), '已删除的历史与文化 PPT 仍在目录');
 console.log('404、页脚和目录校验通过：' + version);
+
+const locked = get('notes/math/mit1806.html');
+const mathList = get('subjects/math.html');
+const otherNote = get('notes/math/prep2-math.html');
+const lockClient = get('assets/note-lock.js');
+assert(mathList.includes('aria-label="已锁定"'), 'MIT 18.06 目录项缺少锁图标');
+assert(locked.includes('page-note note-protected'), 'MIT 18.06 页面未默认锁定');
+assert(locked.includes('该笔记已锁定，输入访问码以访问'), '解锁提示文案不正确');
+assert(locked.includes('id="note-lock-form"'), '缺少访问码输入表单');
+assert(locked.includes('note-lock.js'), '锁定页未加载解锁脚本');
+assert(otherNote.includes('page-note') && !otherNote.includes('note-protected'), '其他数学笔记受到误锁定');
+assert(lockClient.includes('crypto.subtle.digest') && lockClient.includes('sessionStorage'), '访问码校验或会话状态缺失');
+const indexPath = fs.readdirSync(path.join(site, 'assets')).find(p => /^search-index\.[a-f0-9]+\.js$/.test(p));
+assert(indexPath, '搜索索引缺失');
+const indexCode = get('assets/' + indexPath);
+const searchIndex = JSON.parse(indexCode.replace(/^window\.SITE_SEARCH_INDEX=/, '').replace(/;\s*$/, ''));
+const lockedIndex = searchIndex.docs.find(d => d.url === 'notes/math/mit1806.html');
+assert(lockedIndex && lockedIndex.sections.length === 0, '搜索索引泄露锁定笔记正文');
+assert(lockedIndex.summary.includes('已锁定'), '锁定笔记搜索摘要未标记');
+console.log('MIT 18.06 锁定界面、目录标记与搜索索引检查通过');

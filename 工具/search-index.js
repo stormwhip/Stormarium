@@ -89,11 +89,11 @@ function buildIndex(notes, subjects, preview = () => '') {
         throw new Error(`搜索信息.json 格式错误：${n.noteDir}`);
       }
     }
-    const summary=info.summary || n.frontSummary || '';
+    const summary=n.locked ? '该笔记已锁定，输入访问码以访问' : (info.summary || n.frontSummary || '');
     return {title:n.title, subject:n.subject, url:n.url, date:n.mtimeStr,
       kind:n.hasMarkdown?'markdown':'pdf', tags:n.tags || [],
-      keywords:info.keywords || [], summary, summaryHtml:preview(summary),
-      sections:n.searchSections || []};
+      keywords:n.locked ? [] : (info.keywords || []), summary, summaryHtml:preview(summary),
+      sections:n.locked ? [] : (n.searchSections || [])};
   });
   const data={schema:1, subjects, docs};
   data.version=hash(JSON.stringify(data));

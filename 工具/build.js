@@ -78,6 +78,7 @@ const SUBJECT_DIRNAME = 'subjects';
 const TOOL_DIRNAME = 'tools';
 const SUBJECT_SLUGS = { '语文': 'chinese', '数学': 'math', '英语': 'english', '物理': 'physics', '化学': 'chemistry', '生物': 'biology', '其他': 'other', '综合资料': 'resources' };
 const MIT1806_NOTE_NAME = 'MIT18.06线性代数计算笔记_Lecture1-19选编';
+const NOTE_LOCK_ICON = '<svg class="note-lock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="已锁定"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/><circle cx="12" cy="15.5" r="1"/></svg>';
 const MIT1806_LEGACY_NAMES = [
   'MIT18.06线性代数计算笔记_Lecture1-16选编',
   'MIT18.06线性代数计算笔记_Lecture1-17选编',
@@ -1229,6 +1230,7 @@ function loadTemplates() {
     footer: t('footer.html'),
     home: t('home.html'),
     note: t('note.html'),
+    noteLock: t('note-lock.html'),
     subject: t('subject.html'),
     tools: new Map(TOOLS.map((tool) => [tool.name, t(tool.tpl)])),
     notfound: t('404.html'),
@@ -1398,6 +1400,7 @@ async function main() {
       noteDir: hit.noteDir,
       mdName: hit.mdName,
       noteName,
+      locked: hit.subject === '数学' && noteName === MIT1806_NOTE_NAME,
       folderName: hit.folderName || noteName,
       hasMarkdown: !!hit.mdAbs,
       // 文件路径与公开链接均使用 ASCII；原中文路径另行生成兼容跳转页。
@@ -1815,7 +1818,7 @@ async function main() {
   const css = readText(P(DIRS.assets, 'style.css'));
   const styleVersion = require('crypto').createHash('sha256').update(css).digest('hex').slice(0,16);
   writeText(P(DIRS.out, OUT_ASSETS, 'style.css'), css);
-  ['theme.js', 'note.js', 'tool.js', 'search.js', 'search-core.js', 'note-pdf.js', 'note-pdf.css', ...(ENABLE_NOTE_QA ? ['note-qa.js', 'note-qa.css'] : [])].forEach((f) => {
+  ['theme.js', 'note.js', 'note-lock.js', 'tool.js', 'search.js', 'search-core.js', 'note-pdf.js', 'note-pdf.css', ...(ENABLE_NOTE_QA ? ['note-qa.js', 'note-qa.css'] : [])].forEach((f) => {
     const source = readText(P(DIRS.assets, f));
     const publicSource = f === 'tool.js'
       ? source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^[\t ]*\/\/[^\n]*$/gm, '').replace(/\n[\t ]*\n/g, '\n')
@@ -2153,8 +2156,8 @@ ${n.html}
     <span class="crumb-current" aria-current="page">${escapeHtml(n.title)}</span>
   </nav>`;
 
-    const noteBody = fill(templates.note, {
-      '笔记标题': escapeHtml(n.title),
+    let noteBody = fill(templates.note, {
+      '笔记标题': escapeHtml(n.title) + (n.locked ? ' ' + NOTE_LOCK_ICON : ''),
       '原生预览': n.pdf ? `      <a class="pdf-native-link" href="${escapeHtml(n.pdf.href)}" target="_blank" rel="noopener">原生预览 ↗</a>` : '',
       '最后修改': escapeHtml(n.mtimeStr),
       '标签行': n.tags.map((t) => `      <a class="tag-pill" href="${root}index.html">#${escapeHtml(t)}</a>`).join('\n'),
@@ -2168,13 +2171,17 @@ ${n.html}
       'Markdown视图': mdViewHtml,
       'PDF视图': pdfViewHtml,
     });
+    if (n.locked) {
+      const gateHtml = fill(templates.noteLock, { '返回链接': escapeHtml(subjectPageHref) });
+      noteBody = noteBody.replace(breadcrumbHtml, breadcrumbHtml + '\n' + gateHtml);
+    }
 
     writeText(P(DIRS.out, n.diskPath.split('/').join(path.sep)), page({
       root,
-      bodyClass: 'note',
+      bodyClass: n.locked ? 'note note-protected' : 'note',
       mainClass: tocHtml ? 'has-toc' : '',
       pageTitle: `${n.title} - ${cfg.siteTitle}`,
-      description: n.summary || n.title,
+      description: n.locked ? '该笔记已锁定，输入访问码以访问' : (n.summary || n.title),
       body: noteBody,
       withKatex: n.hasMarkdown || ENABLE_NOTE_QA,
       extraHead: `<script>document.documentElement.classList.add('note-js');window.SITE_CFG = { root: '${root}' };</script>` +
@@ -2182,6 +2189,7 @@ ${n.html}
         (n.pdf ? `<link rel="stylesheet" href="${root}${OUT_ASSETS}/note-pdf.css?v=${pdfVersion}">` : ''),
       scripts: [
         hljsRel && n.hasMarkdown ? `<script src="${root}${OUT_ASSETS}/highlight.min.js" defer></script>` : '',
+        n.locked ? `<script src="${root}${OUT_ASSETS}/note-lock.js?v=${noteScriptVersion}" defer></script>` : '',
         `<script src="${root}${OUT_ASSETS}/note.js?v=${noteScriptVersion}" defer></script>`,
         n.pdf ? `<script src="${root}${OUT_ASSETS}/note-pdf.js?v=${pdfVersion}" defer></script>` : '',
         ENABLE_NOTE_QA ? `<script src="${root}${OUT_ASSETS}/note-qa.js?v=${qaVersion}" defer></script>` : '',
@@ -2210,7 +2218,7 @@ ${n.html}
           (n.pdf ? '<span class="pdf-badge" title="有 PDF 版">PDF</span>' : '') +
           (n.tex ? '<span class="tex-badge" title="有 LaTeX 源码">LaTeX</span>' : '');
         return `      <li class="material-item">` +
-          `<a class="material-title" href="../${escapeHtml(n.url)}">${escapeHtml(n.title)}</a>` +
+          `<a class="material-title" href="../${escapeHtml(n.url)}">${escapeHtml(n.title)}${n.locked ? ' ' + NOTE_LOCK_ICON : ''}</a>` +
           (badges ? `<span class="material-badges">${badges}</span>` : '') +
           `</li>`;
       }).join('\n');

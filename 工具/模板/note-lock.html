@@ -1,0 +1,22 @@
+<section class="note-lock-gate" id="note-lock-gate" aria-labelledby="note-lock-heading">
+  <div class="note-lock-card">
+    <div class="note-lock-emblem" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"><rect x="4.5" y="10" width="15" height="11" rx="2.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/><circle cx="12" cy="15.5" r="1.15"/></svg>
+    </div>
+    <p class="note-lock-kicker">MIT 18.06 · LOCKED</p>
+    <h1 class="note-lock-heading" id="note-lock-heading">该笔记已锁定，输入访问码以访问</h1>
+    <p class="note-lock-desc">解锁后可阅读线性代数笔记及其配套文件。</p>
+    <form class="note-lock-form" id="note-lock-form" novalidate>
+      <label for="note-lock-code">访问码</label>
+      <div class="note-lock-input-wrap">
+        <input class="note-lock-input" id="note-lock-code" type="password" placeholder="请输入访问码" autocomplete="off" autocapitalize="off" spellcheck="false" required aria-describedby="note-lock-error">
+        <button class="note-lock-visibility" id="note-lock-visibility" type="button" aria-label="显示访问码" aria-pressed="false" title="显示或隐藏访问码">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+      <p class="note-lock-error" id="note-lock-error" role="status" aria-live="polite"></p>
+      <button class="note-lock-submit" id="note-lock-submit" type="submit">解锁访问 <span aria-hidden="true">→</span></button>
+    </form>
+    <a class="note-lock-back" href="{{返回链接}}">← 返回数学资料</a>
+  </div>
+</section>
