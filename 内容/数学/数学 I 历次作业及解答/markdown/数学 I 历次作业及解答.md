@@ -273,3 +273,85 @@ $$
 $$
 \boxed{a=1,\qquad b=4}.
 $$
+
+---
+
+17. $\displaystyle I=\int\frac{dx}{\sqrt{x(4-x)}}$
+
+令 $x=2-a$，则
+
+$$
+I=-\int\frac{da}{\sqrt{4-a^2}}.
+$$
+
+令 $a=2\sin t$，则 $da=2\cos t\,dt$，从而
+
+$$
+\begin{aligned}
+I&=-\int\frac{2\cos t\,dt}{2\cos t}=-t+C\\
+&=-\arcsin\frac a2+C
+=-\arcsin\frac{2-x}{2}+C
+=\boxed{\arcsin\frac{x-2}{2}+C}.
+\end{aligned}
+$$
+
+---
+
+18. $\displaystyle I=\int\frac{dx}{\cos x\sqrt{\sin x}}$
+
+令 $t=\sqrt{\sin x}$，则 $t^2=\sin x$，$2t\,dt=\cos x\,dx$，且 $1-t^4=\cos^2x$，故
+
+$$
+\begin{aligned}
+I&=\int\frac{2t\,dt}{\cos^2x\cdot t}
+=\int\frac{2\,dt}{1-t^4}\\
+&=\int\frac{dt}{1+t^2}
++\frac12\int\frac{dt}{1+t}
++\frac12\int\frac{dt}{1-t}\\
+&=\arctan t+\frac12\ln|1+t|-\frac12\ln|1-t|+C\\
+&=\arctan t+\frac12\ln\left|\frac{1+t}{1-t}\right|+C\\
+&=\boxed{\arctan\sqrt{\sin x}+\frac12\ln\left|\frac{1+\sqrt{\sin x}}{1-\sqrt{\sin x}}\right|+C}.
+\end{aligned}
+$$
+
+---
+
+19. $\displaystyle I=\int\frac{dx}{(x+1)(x^2-2x+2)}$
+
+由部分分式分解，
+
+$$
+\begin{aligned}
+I&=\frac15\int\frac{dx}{x+1}
+-\frac15\int\frac{x-3}{x^2-2x+2}\,dx\\
+&=\frac15\ln|x+1|
+-\frac1{10}\int\frac{2x-2}{x^2-2x+2}\,dx
++\frac25\int\frac{dx}{(x-1)^2+1}\\
+&=\boxed{\frac15\ln|x+1|-\frac1{10}\ln(x^2-2x+2)
++\frac25\arctan(x-1)+C}.
+\end{aligned}
+$$
+
+---
+
+20. $\displaystyle I=\int\frac{dx}{1+\sin x+\cos x}$
+
+令 $u=\tan\frac x2$，则
+
+$$
+dx=\frac{2\,du}{1+u^2},\qquad
+\sin x=\frac{2u}{1+u^2},\qquad
+\cos x=\frac{1-u^2}{1+u^2}.
+$$
+
+因此，
+
+$$
+\begin{aligned}
+I&=\int\frac{\dfrac{2\,du}{1+u^2}}
+{1+\dfrac{2u}{1+u^2}+\dfrac{1-u^2}{1+u^2}}
+=\int\frac{du}{u+1}\\
+&=\boxed{\ln|u+1|+C
+=\ln\left|\tan\frac x2+1\right|+C}.
+\end{aligned}
+$$
