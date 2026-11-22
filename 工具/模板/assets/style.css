@@ -1276,9 +1276,12 @@ body.note-pdf-view .toc-desktop { display: none !important; }
 .note-body tbody tr:nth-child(even) { background: var(--bg-mute); }
 
 .note-body img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 6px auto 8px 0;
   border-radius: var(--radius-s);
   box-shadow: var(--shadow-m);
-  margin: 6px 0 8px;
   background: var(--bg-soft);
 }
 .note-body a[data-file]::after { content: " ⬇"; font-size: 0.85em; }
