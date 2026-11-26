@@ -9,6 +9,7 @@ const notes = [
   '内容/物理/预科二物理笔记/markdown/预科二物理笔记.md',
   '内容/化学/预科一化学笔记/markdown/预科一化学笔记.md',
   '内容/化学/预科二化学笔记/markdown/预科二化学笔记.md',
+  '内容/生物/生物 I 笔记（by wsx）/markdown/预科二生物笔记.md',
 ];
 const errors = [];
 
